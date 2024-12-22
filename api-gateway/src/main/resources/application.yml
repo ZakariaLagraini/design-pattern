@@ -1,0 +1,20 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: user-management-service
+          uri: lb://user-management-service
+          predicates:
+            - Path=/auth/**
+        - id: catalog-service
+          uri: lb://design-pattern-catalog-service
+          predicates:
+            - Path=/patterns/**
+        - id: recommendation-service
+          uri: lb://recommendation-engine-service
+          predicates:
+            - Path=/recommendations/**
+        - id: ai-service
+          uri: lb://ai-helper-service
+          predicates:
+            - Path=/ai/**

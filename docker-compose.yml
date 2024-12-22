@@ -1,0 +1,84 @@
+version: '3.8'
+services:
+  service-registry:
+    build:
+      context: ./service-registry
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
+    networks:
+      - app-network
+  user-management-service:
+    build:
+      context: ./user-management-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      - service-registry
+    networks:
+      - app-network
+  design-pattern-catalog-service:
+    build:
+      context: ./design-pattern-catalog-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    depends_on:
+      - service-registry
+    networks:
+      - app-network
+  recommendation-engine-service:
+    build:
+      context: ./recommendation-engine-service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    depends_on:
+      - service-registry
+    networks:
+      - app-network
+  ai-helper-service:
+    build:
+      context: ./ai-helper-service
+      dockerfile: Dockerfile
+    ports:
+      - "8084:8084"
+    depends_on:
+      - service-registry
+    networks:
+      - app-network
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - service-registry
+    networks:
+      - app-network
+  postgres-user:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: user_db
+    networks:
+      - app-network
+  postgres-catalog:
+    image: postgres:latest
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: catalog_db
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
