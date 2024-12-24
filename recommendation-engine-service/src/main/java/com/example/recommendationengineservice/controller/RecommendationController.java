@@ -1,4 +1,5 @@
 package com.example.recommendationengineservice.controller;
+
 import com.example.recommendationengineservice.model.Recommendation;
 import com.example.recommendationengineservice.service.RecommendationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,5 +33,10 @@ public class RecommendationController {
     {
         recommendationService.processUserInteraction(userId, patternId);
         return ResponseEntity.ok("Interaction processed successfully");
+    }
+
+    @PostMapping("/gemini")
+    public ResponseEntity<Recommendation> getGeminiRecommendations(@RequestBody String codeSnippet){
+        return ResponseEntity.ok(recommendationService.getGeminiRecommendations(codeSnippet));
     }
 }
