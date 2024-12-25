@@ -1,14 +1,20 @@
 import { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { DocumentIcon, CodeBracketIcon } from '@heroicons/react/24/outline';
+import { 
+  DocumentIcon, 
+  CodeBracketIcon, 
+  ClipboardIcon, 
+  ArrowDownTrayIcon,
+  EyeIcon
+} from '@heroicons/react/24/outline';
 
 export default function PatternGenerator() {
   const [code, setCode] = useState('');
   const [patterns, setPatterns] = useState(null);
-  const [activeTab, setActiveTab] = useState('upload'); // 'upload' or 'paste'
+  const [activeTab, setActiveTab] = useState('upload');
+  const [showPreview, setShowPreview] = useState(false);
 
   const onDrop = async (acceptedFiles) => {
-    // Handle file upload (static for now)
     const file = acceptedFiles[0];
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -25,12 +31,63 @@ export default function PatternGenerator() {
   });
 
   const handleAnalyze = () => {
+    setShowPreview(false);
     // Simulate pattern analysis
     setPatterns([
-      { name: 'Singleton Pattern', confidence: 90 },
-      { name: 'Factory Pattern', confidence: 85 },
-      { name: 'Observer Pattern', confidence: 75 },
+      { 
+        name: 'Singleton Pattern',
+        confidence: 90,
+        implementation: `class Singleton {
+  private static instance: Singleton;
+  
+  private constructor() {}
+  
+  public static getInstance(): Singleton {
+    if (!Singleton.instance) {
+      Singleton.instance = new Singleton();
+    }
+    return Singleton.instance;
+  }
+}`,
+        description: 'Ensures a class has only one instance and provides a global point of access to it.'
+      },
+      { 
+        name: 'Factory Pattern',
+        confidence: 85,
+        implementation: `interface Product {}
+
+class ConcreteProductA implements Product {}
+class ConcreteProductB implements Product {}
+
+class Factory {
+  createProduct(type: string): Product {
+    switch(type) {
+      case 'A':
+        return new ConcreteProductA();
+      case 'B':
+        return new ConcreteProductB();
+      default:
+        throw new Error('Invalid product type');
+    }
+  }
+}`,
+        description: 'Creates objects without exposing the instantiation logic to the client.'
+      },
     ]);
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+  };
+
+  const downloadCode = (code, filename) => {
+    const blob = new Blob([code], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   return (
@@ -71,23 +128,37 @@ export default function PatternGenerator() {
         {/* Content Area */}
         <div className="space-y-6">
           {activeTab === 'upload' ? (
-            <div
-              {...getRootProps()}
-              className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer
+            <>
+              <div {...getRootProps()} className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer
                 transition-colors duration-200 ease-in-out
-                ${isDragActive 
-                  ? 'border-primary-500 bg-primary-50' 
-                  : 'border-gray-300 hover:border-primary-400'}`}
-            >
-              <input {...getInputProps()} />
-              <DocumentIcon className="mx-auto h-12 w-12 text-gray-400" />
-              <p className="mt-2 text-sm font-medium text-gray-900">
-                Drop your code files here, or click to browse
-              </p>
-              <p className="mt-1 text-xs text-gray-500">
-                Supports: .js, .jsx, .ts, .tsx, .java, .py, .cpp, .c, .cs
-              </p>
-            </div>
+                ${isDragActive ? 'border-primary-500 bg-primary-50' : 'border-gray-300 hover:border-primary-400'}`}>
+                <input {...getInputProps()} />
+                <DocumentIcon className="mx-auto h-12 w-12 text-gray-400" />
+                <p className="mt-2 text-sm font-medium text-gray-900">
+                  Drop your code files here, or click to browse
+                </p>
+                <p className="mt-1 text-xs text-gray-500">
+                  Supports: .js, .jsx, .ts, .tsx, .java, .py, .cpp, .c, .cs
+                </p>
+              </div>
+              {code && (
+                <div className="flex justify-between items-center">
+                  <button
+                    onClick={() => setShowPreview(true)}
+                    className="inline-flex items-center px-4 py-2 text-sm text-primary-600 hover:text-primary-700"
+                  >
+                    <EyeIcon className="h-5 w-5 mr-2" />
+                    Preview Code
+                  </button>
+                  <button
+                    onClick={handleAnalyze}
+                    className="btn-primary"
+                  >
+                    Generate Patterns
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="space-y-4">
               <div className="rounded-lg border border-gray-300 shadow-sm">
@@ -100,17 +171,28 @@ export default function PatternGenerator() {
                     placeholder:text-gray-400 focus:ring-2 focus:ring-primary-500"
                 />
               </div>
+              {code && (
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleAnalyze}
+                    className="btn-primary"
+                  >
+                    Generate Patterns
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
-          {code && (
-            <div className="flex justify-end">
-              <button
-                onClick={handleAnalyze}
-                className="btn-primary flex items-center gap-2"
-              >
-                Analyze Patterns
-              </button>
+          {/* Code Preview */}
+          {showPreview && code && (
+            <div className="mt-8 space-y-4">
+              <h2 className="text-xl font-semibold text-gray-900">Code Preview</h2>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <pre className="overflow-x-auto font-mono text-sm">
+                  {code}
+                </pre>
+              </div>
             </div>
           )}
 
@@ -118,29 +200,46 @@ export default function PatternGenerator() {
           {patterns && (
             <div className="mt-8 space-y-6">
               <h2 className="text-xl font-semibold text-gray-900">
-                Detected Patterns
+                Suggested Design Patterns
               </h2>
               <div className="bg-white rounded-lg shadow divide-y divide-gray-200">
                 {patterns.map((pattern, index) => (
-                  <div key={index} className="p-6">
+                  <div key={index} className="p-6 space-y-4">
                     <div className="flex items-center justify-between">
                       <h3 className="text-lg font-medium text-gray-900">
                         {pattern.name}
                       </h3>
-                      <div className="flex items-center">
-                        <span className="text-sm text-gray-500 mr-2">
-                          Confidence:
-                        </span>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                          ${pattern.confidence >= 90 
-                            ? 'bg-green-100 text-green-800'
-                            : pattern.confidence >= 80
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                          }`}>
-                          {pattern.confidence}%
-                        </span>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                        ${pattern.confidence >= 90 
+                          ? 'bg-green-100 text-green-800'
+                          : pattern.confidence >= 80
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                        {pattern.confidence}% Match
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600">{pattern.description}</p>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="flex justify-end space-x-4 mb-2">
+                        <button
+                          onClick={() => copyToClipboard(pattern.implementation)}
+                          className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
+                        >
+                          <ClipboardIcon className="h-4 w-4 mr-1" />
+                          Copy
+                        </button>
+                        <button
+                          onClick={() => downloadCode(pattern.implementation, `${pattern.name.toLowerCase().replace(' ', '_')}.ts`)}
+                          className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
+                        >
+                          <ArrowDownTrayIcon className="h-4 w-4 mr-1" />
+                          Download
+                        </button>
                       </div>
+                      <pre className="overflow-x-auto font-mono text-sm">
+                        {pattern.implementation}
+                      </pre>
                     </div>
                   </div>
                 ))}
