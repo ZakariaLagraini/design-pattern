@@ -1,12 +1,12 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
-import PrivateRoute from './components/auth/PrivateRoute';
 import Navbar from './components/layout/Navbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import PatternGenerator from './pages/PatternGenerator';
+import ChatBot from './components/ChatBot';
 
 function App() {
   return (
@@ -18,17 +18,10 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
-            } />
-            <Route path="/generator" element={
-              <PrivateRoute>
-                <PatternGenerator />
-              </PrivateRoute>
-            } />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/generator" element={<PatternGenerator />} />
           </Routes>
+          <ChatBot />
         </div>
       </BrowserRouter>
     </AuthProvider>
