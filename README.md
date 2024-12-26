@@ -16,31 +16,37 @@ The **Design Pattern Generator** is a comprehensive microservices-based applicat
 ### User Management Service
 | Method | Path                | Description                | User Authenticated | Available from UI |
 |--------|---------------------|----------------------------|--------------------|-------------------|
-| POST   | /auth/register      | Register a new user        |                    | ✗                 |
-| POST   | /auth/login         | Authenticate user and get token |               | ✗                 |
-| GET    | /auth/user/{id}     | Get user details           | ✓                  | ✗                 |
-| PUT    | /auth/user/{id}     | Update user information    | ✓                  | ✗                 |
-| DELETE | /auth/user/{id}     | Delete user account        | ✓                  | ✗                 |
+| POST   | /auth/register      | Register a new user        | ✓                  | ✓                 |
+| POST   | /auth/login         | Authenticate user and get token | ✓               | ✓                 |
+| GET    | /auth/user/{id}     | Get user details           | ✓                  | ✓                 |
+| PUT    | /auth/user/{id}     | Update user information    | ✓                  | ✓                 |
+| DELETE | /auth/user/{id}     | Delete user account        | ✓                  | ✓                 |
+
+---
 
 ### Design Pattern Catalog Service
 | Method | Path                | Description                | User Authenticated | Available from UI |
 |--------|---------------------|----------------------------|--------------------|-------------------|
-| GET    | /patterns           | Get all design patterns    |                    | ✗                 |
-| GET    | /patterns/{id}      | Get specific pattern details |                  | ✗                 |
-| POST   | /patterns           | Add new design pattern     | ✓                  | ✗                 |
+| GET    | /patterns           | Get all design patterns    | ✓                  | ✓                 |
+| GET    | /patterns/{id}      | Get specific pattern details | ✓                | ✓                 |
+| POST   | /patterns           | Add new design pattern     | ✓                  | ✓                 |
+
+---
 
 ### Recommendation Engine Service
 | Method | Path                                       | Description                         | User Authenticated | Available from UI |
 |--------|-------------------------------------------|-------------------------------------|--------------------|-------------------|
-| GET    | /recommendations/{userId}                 | Get recommendations for user        | ✓                  | ✗                 |
-| GET    | /recommendations                          | Get all recommendations             | ✓                  | ✗                 |
-| POST   | /recommendations/interactions/{userId}/{patternId} | Record user interaction            | ✓                  | ✗                 |
-| POST   | /recommendations/gemini                   | Get AI-powered recommendations      | ✓                  | ✗                 |
+| GET    | /recommendations/{userId}                 | Get recommendations for user        | ✓                  | ✓                 |
+| GET    | /recommendations                          | Get all recommendations             | ✓                  | ✓                 |
+| POST   | /recommendations/interactions/{userId}/{patternId} | Record user interaction            | ✓                  | ✓                 |
+| POST   | /recommendations/gemini                   | Get AI-powered recommendations      | ✓                  | ✓                 |
+
+---
 
 ### AI Helper Service
 | Method | Path                | Description                          | User Authenticated | Available from UI |
 |--------|---------------------|--------------------------------------|--------------------|-------------------|
-| POST   | /api/chat/ask       | Get AI assistance for pattern implementation | ✓           | ✗                 |
+| POST   | /api/chat/ask       | Get AI assistance for pattern implementation | ✓           | ✓                 |
 
 ---
 
