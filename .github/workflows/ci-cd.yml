@@ -10,8 +10,6 @@ env:
   REGISTRY: ghcr.io
   POSTGRES_USER: postgres
   POSTGRES_PASSWORD: postgres
-  REPO_OWNER: ${{ toLowerCase(github.repository_owner) }}
-  REPO_NAME: design-pattern
 
 jobs:
   build-and-test:
@@ -56,7 +54,6 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    # Build and test services in the correct order
     - name: Build Service Registry
       run: |
         cd service-registry
@@ -103,11 +100,10 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    - name: Convert to lowercase
-      id: strings
+    - name: Set lowercase repository owner
       run: |
-        echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
-        echo "repo=${GITHUB_REPOSITORY,,}" >> $GITHUB_OUTPUT
+        echo "OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+        echo "Repository owner: $OWNER"
     
     - name: Log in to GitHub Container Registry
       uses: docker/login-action@v2
@@ -120,46 +116,46 @@ jobs:
     - name: Build and push Service Registry
       run: |
         echo "Building service-registry..."
-        docker build -t ${{ env.REGISTRY }}/${{ steps.strings.outputs.owner }}/design-pattern/service-registry:latest ./service-registry
+        docker build -t ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/service-registry:latest ./service-registry
         echo "Pushing service-registry..."
-        docker push ${{ env.REGISTRY }}/${{ steps.strings.outputs.owner }}/design-pattern/service-registry:latest
+        docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/service-registry:latest
 
     # Build and push User Management Service
     - name: Build and push User Management Service
       run: |
         echo "Building user-management..."
-        docker build -t ${{ env.REGISTRY }}/${{ steps.strings.outputs.owner }}/design-pattern/user-management:latest ./user-management-service
+        docker build -t ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/user-management:latest ./user-management-service
         echo "Pushing user-management..."
-        docker push ${{ env.REGISTRY }}/${{ steps.strings.outputs.owner }}/design-pattern/user-management:latest
+        docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/user-management:latest
 
     # Build and push Design Pattern Catalog Service
     - name: Build and push Design Pattern Catalog Service
       run: |
         echo "Building design-pattern-catalog..."
-        docker build -t ${{ env.REGISTRY }}/${{ steps.strings.outputs.owner }}/design-pattern/design-pattern-catalog:latest ./design-pattern-catalog-service
+        docker build -t ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/design-pattern-catalog:latest ./design-pattern-catalog-service
         echo "Pushing design-pattern-catalog..."
-        docker push ${{ env.REGISTRY }}/${{ steps.strings.outputs.owner }}/design-pattern/design-pattern-catalog:latest
+        docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/design-pattern-catalog:latest
 
     # Build and push Recommendation Engine Service
     - name: Build and push Recommendation Engine Service
       run: |
         echo "Building recommendation-engine..."
-        docker build -t ${{ env.REGISTRY }}/${{ steps.strings.outputs.owner }}/design-pattern/recommendation-engine:latest ./recommendation-engine-service
+        docker build -t ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/recommendation-engine:latest ./recommendation-engine-service
         echo "Pushing recommendation-engine..."
-        docker push ${{ env.REGISTRY }}/${{ steps.strings.outputs.owner }}/design-pattern/recommendation-engine:latest
+        docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/recommendation-engine:latest
 
     # Build and push AI Helper Service
     - name: Build and push AI Helper Service
       run: |
         echo "Building ai-helper..."
-        docker build -t ${{ env.REGISTRY }}/${{ steps.strings.outputs.owner }}/design-pattern/ai-helper:latest ./ai-helper-service
+        docker build -t ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/ai-helper:latest ./ai-helper-service
         echo "Pushing ai-helper..."
-        docker push ${{ env.REGISTRY }}/${{ steps.strings.outputs.owner }}/design-pattern/ai-helper:latest
+        docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/ai-helper:latest
 
     # Build and push API Gateway
     - name: Build and push API Gateway
       run: |
         echo "Building api-gateway..."
-        docker build -t ${{ env.REGISTRY }}/${{ steps.strings.outputs.owner }}/design-pattern/api-gateway:latest ./api-gateway
+        docker build -t ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/api-gateway:latest ./api-gateway
         echo "Pushing api-gateway..."
-        docker push ${{ env.REGISTRY }}/${{ steps.strings.outputs.owner }}/design-pattern/api-gateway:latest
+        docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/api-gateway:latest
