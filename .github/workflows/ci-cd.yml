@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ master ]
+    branches: [ main, master ]
 
 env:
   REGISTRY: ghcr.io
@@ -93,7 +93,6 @@ jobs:
 
   docker-build-push:
     needs: build-and-test
-    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -109,38 +108,57 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
+    # Added debug information
+    - name: Debug Info
+      run: |
+        echo "GitHub Ref: ${{ github.ref }}"
+        echo "GitHub Repository: ${{ github.repository }}"
+        echo "Actor: ${{ github.actor }}"
+        
     # Build and push Service Registry first
     - name: Build and push Service Registry
       run: |
+        echo "Building service-registry..."
         docker build -t ${{ env.REGISTRY }}/${{ github.repository }}/service-registry:latest ./service-registry
+        echo "Pushing service-registry..."
         docker push ${{ env.REGISTRY }}/${{ github.repository }}/service-registry:latest
 
     # Build and push User Management Service
     - name: Build and push User Management Service
       run: |
+        echo "Building user-management..."
         docker build -t ${{ env.REGISTRY }}/${{ github.repository }}/user-management:latest ./user-management-service
+        echo "Pushing user-management..."
         docker push ${{ env.REGISTRY }}/${{ github.repository }}/user-management:latest
 
     # Build and push Design Pattern Catalog Service
     - name: Build and push Design Pattern Catalog Service
       run: |
+        echo "Building design-pattern-catalog..."
         docker build -t ${{ env.REGISTRY }}/${{ github.repository }}/design-pattern-catalog:latest ./design-pattern-catalog-service
+        echo "Pushing design-pattern-catalog..."
         docker push ${{ env.REGISTRY }}/${{ github.repository }}/design-pattern-catalog:latest
 
     # Build and push Recommendation Engine Service
     - name: Build and push Recommendation Engine Service
       run: |
+        echo "Building recommendation-engine..."
         docker build -t ${{ env.REGISTRY }}/${{ github.repository }}/recommendation-engine:latest ./recommendation-engine-service
+        echo "Pushing recommendation-engine..."
         docker push ${{ env.REGISTRY }}/${{ github.repository }}/recommendation-engine:latest
 
     # Build and push AI Helper Service
     - name: Build and push AI Helper Service
       run: |
+        echo "Building ai-helper..."
         docker build -t ${{ env.REGISTRY }}/${{ github.repository }}/ai-helper:latest ./ai-helper-service
+        echo "Pushing ai-helper..."
         docker push ${{ env.REGISTRY }}/${{ github.repository }}/ai-helper:latest
 
     # Build and push API Gateway
     - name: Build and push API Gateway
       run: |
+        echo "Building api-gateway..."
         docker build -t ${{ env.REGISTRY }}/${{ github.repository }}/api-gateway:latest ./api-gateway
+        echo "Pushing api-gateway..."
         docker push ${{ env.REGISTRY }}/${{ github.repository }}/api-gateway:latest
