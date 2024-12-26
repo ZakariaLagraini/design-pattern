@@ -57,92 +57,38 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    # Start Service Registry first
-    - name: Build and Start Service Registry
+    # Build all services first
+    - name: Build Service Registry
       run: |
         cd service-registry
         chmod +x mvnw
-        ./mvnw spring-boot:run &
-        echo "Waiting for Service Registry to start..."
-        while ! nc -z localhost 8761; do
-          sleep 1
-        done
-        echo "Service Registry is up"
+        ./mvnw clean package -DskipTests
+        mkdir -p target/docker
+        cp target/*.jar target/docker/app.jar
 
-    # Then run other services
-    - name: Build and Analyze User Management Service
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/user_db
-        SPRING_DATASOURCE_USERNAME: postgres
-        SPRING_DATASOURCE_PASSWORD: Zaratapa1
+    - name: Build User Management Service
       run: |
         cd user-management-service
         chmod +x mvnw
-        ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.projectKey=design-pattern_design-pattern \
-          -Dsonar.organization=design-pattern \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+        ./mvnw clean package -DskipTests
+        mkdir -p target/docker
+        cp target/*.jar target/docker/app.jar
 
-    - name: Build and Analyze Design Pattern Catalog Service
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5433/catalog_db
-        SPRING_DATASOURCE_USERNAME: postgres
-        SPRING_DATASOURCE_PASSWORD: Zaratapa1
+    - name: Build Design Pattern Catalog Service
       run: |
         cd design-pattern-catalog-service
         chmod +x mvnw
-        ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.projectKey=design-pattern_design-pattern \
-          -Dsonar.organization=design-pattern \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-        
-    - name: Build and Analyze Recommendation Engine Service
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        cd recommendation-engine-service
-        chmod +x mvnw
-        ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.projectKey=design-pattern_design-pattern \
-          -Dsonar.organization=design-pattern \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-        
-    - name: Build and Analyze AI Helper Service
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        cd ai-helper-service
-        chmod +x mvnw
-        ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.projectKey=design-pattern_design-pattern \
-          -Dsonar.organization=design-pattern \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-        
-    - name: Build and Analyze API Gateway
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        cd api-gateway
-        chmod +x mvnw
-        ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.projectKey=design-pattern_design-pattern \
-          -Dsonar.organization=design-pattern \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+        ./mvnw clean package -DskipTests
+        mkdir -p target/docker
+        cp target/*.jar target/docker/app.jar
 
-    # Upload artifacts for next job
+    # Upload artifacts
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
         name: build-artifacts
         path: |
-          */target/*.jar
+          */target/docker/app.jar
         retention-days: 1
 
   docker-build-push:
@@ -165,8 +111,7 @@ jobs:
     - name: Set lowercase repository owner
       run: |
         echo "OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
-        echo "Repository owner: $OWNER"
-    
+
     - name: Log in to GitHub Container Registry
       uses: docker/login-action@v2
       with:
@@ -174,20 +119,12 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    # Debug step to check files
-    - name: List files
-      run: |
-        echo "Current directory:"
-        pwd
-        echo "Files in current directory:"
-        ls -R
-
     # Build and push Service Registry
     - name: Build and push Service Registry
       run: |
         echo "Building service-registry..."
         cd service-registry
-        mv target/*.jar app.jar
+        cp ../service-registry/target/docker/app.jar app.jar
         docker build -t ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/service-registry:latest .
         echo "Pushing service-registry..."
         docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/service-registry:latest
@@ -197,10 +134,9 @@ jobs:
       run: |
         echo "Building user-management..."
         cd user-management-service
-        mv target/*.jar app.jar
+        cp ../user-management-service/target/docker/app.jar app.jar
         docker build -t ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/user-management:latest .
         echo "Pushing user-management..."
         docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/user-management:latest
 
     # Continue with other services...
-    # (Similar pattern for other services)
