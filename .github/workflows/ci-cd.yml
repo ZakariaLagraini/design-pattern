@@ -57,52 +57,94 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    # Build all services
-    - name: Build Service Registry
+    # Build and analyze all services
+    - name: Build and Analyze Service Registry
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd service-registry
         chmod +x mvnw
-        ./mvnw clean package -DskipTests
+        ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.projectKey=design-pattern_design-pattern \
+          -Dsonar.organization=design-pattern \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
         mkdir -p target/docker
         cp target/*.jar target/docker/app.jar
 
-    - name: Build API Gateway
+    - name: Build and Analyze API Gateway
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd api-gateway
         chmod +x mvnw
-        ./mvnw clean package -DskipTests
+        ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.projectKey=design-pattern_design-pattern \
+          -Dsonar.organization=design-pattern \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
         mkdir -p target/docker
         cp target/*.jar target/docker/app.jar
 
-    - name: Build User Management Service
+    - name: Build and Analyze User Management Service
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/user_db
+        SPRING_DATASOURCE_USERNAME: postgres
+        SPRING_DATASOURCE_PASSWORD: Zaratapa1
       run: |
         cd user-management-service
         chmod +x mvnw
-        ./mvnw clean package -DskipTests
+        ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.projectKey=design-pattern_design-pattern \
+          -Dsonar.organization=design-pattern \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
         mkdir -p target/docker
         cp target/*.jar target/docker/app.jar
 
-    - name: Build Design Pattern Catalog Service
+    - name: Build and Analyze Design Pattern Catalog Service
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5433/catalog_db
+        SPRING_DATASOURCE_USERNAME: postgres
+        SPRING_DATASOURCE_PASSWORD: Zaratapa1
       run: |
         cd design-pattern-catalog-service
         chmod +x mvnw
-        ./mvnw clean package -DskipTests
+        ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.projectKey=design-pattern_design-pattern \
+          -Dsonar.organization=design-pattern \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
         mkdir -p target/docker
         cp target/*.jar target/docker/app.jar
 
-    - name: Build Recommendation Engine Service
+    - name: Build and Analyze Recommendation Engine Service
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd recommendation-engine-service
         chmod +x mvnw
-        ./mvnw clean package -DskipTests
+        ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.projectKey=design-pattern_design-pattern \
+          -Dsonar.organization=design-pattern \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
         mkdir -p target/docker
         cp target/*.jar target/docker/app.jar
 
-    - name: Build AI Helper Service
+    - name: Build and Analyze AI Helper Service
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd ai-helper-service
         chmod +x mvnw
-        ./mvnw clean package -DskipTests
+        ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.projectKey=design-pattern_design-pattern \
+          -Dsonar.organization=design-pattern \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
         mkdir -p target/docker
         cp target/*.jar target/docker/app.jar
 
