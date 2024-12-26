@@ -20,151 +20,65 @@ class DeepCodeAnalyzer:
         
         # Initialize LangChain with Gemini
         self.llm = ChatGoogleGenerativeAI(
-            model="gemini-1.5-flash-latest",
+            model="gemini-pro",
             temperature=0.7,
             google_api_key=os.getenv('GOOGLE_API_KEY')
         )
 
-        # Enhanced prompt template with more detailed code examples
+        # Simplified prompt template
         self.prompt_template = PromptTemplate(
             input_variables=["code_content"],
             template="""
-Analyze this Django backend codebase and provide detailed design pattern recommendations with implementation examples.
-Focus on practical, implementable patterns that would improve the code structure and maintainability.
+Analyze the provided codebase and provide a clear, concise analysis in the following format:
 
 Code to analyze:
 {code_content}
 
-Please provide a detailed analysis in the following format:
+Provide analysis in this simplified JSON format:
 {{
-    "current_patterns": [
-        {{
-            "pattern_name": "Name of pattern currently used",
-            "category": "Architectural/Creational/Structural/Behavioral",
-            "implementation": "How it's currently implemented",
-            "effectiveness": "How well it works",
-            "suggestions": "How to improve it",
-            "current_files": ["List of files currently using this pattern"],
-            "code_example": {{
-                "current": "// Current implementation example",
-                "improved": "// Suggested improved implementation"
-            }}
-        }}
-    ],
-    "recommended_patterns": [
-        {{
-            "pattern_name": "Name of recommended pattern",
-            "category": "Architectural/Creational/Structural/Behavioral",
-            "purpose": "Why this pattern would be useful",
-            "implementation_guide": {{
-                "description": "Detailed implementation steps",
-                "files_to_create": [
-                    {{
-                        "path": "path/to/new/file.py",
-                        "purpose": "What this file will do",
-                        "code_example": "Complete code example with comments"
-                    }}
-                ],
-                "files_to_modify": [
-                    {{
-                        "path": "path/to/existing/file.py",
-                        "changes": [
-                            {{
-                                "description": "What to change",
-                                "current_code": "// Current code snippet",
-                                "new_code": "// New code snippet",
-                                "explanation": "Why this change is needed"
-                            }}
-                        ]
-                    }}
-                ],
-                "dependencies": [
-                    {{
-                        "name": "Package name",
-                        "version": "Version requirement",
-                        "purpose": "Why this dependency is needed"
-                    }}
-                ]
-            }},
-            "benefits": ["List of specific benefits"],
-            "challenges": ["Potential implementation challenges"],
-            "priority": "High/Medium/Low",
-            "estimated_effort": "Story points or time estimate",
-            "testing_considerations": [
-                {{
-                    "aspect": "What to test",
-                    "test_example": "Example test code"
-                }}
+    "status": "success",
+    "analysis": {{
+        "framework_detection": {{
+            "name": "Name of detected framework",
+            "confidence": "High/Medium/Low",
+            "key_files": [
+                "List of main framework files found"
             ]
-        }}
-    ],
-    "architecture_suggestions": {{
-        "current_architecture": "Description of current architecture",
-        "suggested_improvements": [
+        }},
+        "code_structure": {{
+            "main_components": [
+                "List of key components/files"
+            ],
+            "weaknesses": [
+                "List of identified weaknesses or areas for improvement"
+            ]
+        }},
+        "suggested_patterns": [
             {{
-                "area": "Area of improvement",
-                "suggestion": "Detailed suggestion",
+                "name": "Pattern name",
+                "type": "Creational/Structural/Behavioral",
+                "priority": "High/Medium/Low",
+                "target_files": [
+                    "Files where this pattern should be implemented"
+                ],
                 "implementation": {{
-                    "steps": ["Step-by-step implementation guide"],
-                    "files": [
-                        {{
-                            "path": "path/to/file.py",
-                            "changes": {{
-                                "before": "// Current code",
-                                "after": "// Suggested code",
-                                "explanation": "Why this change helps"
-                            }}
-                        }}
-                    ],
-                    "configuration": {{
-                        "file": "path/to/config/file",
-                        "changes": "Required configuration changes"
-                    }}
-                }},
-                "priority": "High/Medium/Low"
+                    "description": "Brief description of how to implement",
+                    "example": "// Simple code example showing implementation"
+                }}
             }}
         ]
     }},
-    "implementation_roadmap": [
-        {{
-            "phase": "Phase number",
-            "patterns": ["Patterns to implement"],
-            "description": "Phase description",
-            "tasks": [
-                {{
-                    "description": "Task description",
-                    "files": ["Files involved"],
-                    "code_changes": {{
-                        "before": "// Current code",
-                        "after": "// New code"
-                    }},
-                    "effort": "Estimated effort",
-                    "dependencies": ["Required changes"]
-                }}
-            ]
-        }}
-    ]
+    "metadata": {{
+        "analyzer_version": "2.0",
+        "analysis_timestamp": "Current timestamp"
+    }}
 }}
 
-Focus on Django-specific patterns and best practices, including:
-1. Django REST framework patterns
-2. Service layer patterns
-3. Repository/Manager patterns
-4. Authentication/Permission patterns
-5. Middleware patterns
-6. Caching strategies
-7. Database access patterns
-8. Error handling patterns
-9. Testing patterns
-10. Async patterns
-
-For each pattern suggestion:
-- Provide complete, working code examples
-- Include docstrings and comments
-- Show both current and suggested implementations
-- Include unit test examples
-- Specify exact file locations and changes
-- Consider Django best practices
+Focus on:
+1. Clear framework detection
+2. Key weaknesses in the code
+3. Most important patterns to implement
+4. Simple, actionable suggestions
 """
         )
 
@@ -183,12 +97,16 @@ For each pattern suggestion:
             
             try:
                 parsed_response = json.loads(cleaned_response)
+                
+                # Add metadata using detected framework
+                framework = parsed_response.get('framework_detection', {}).get('detected_framework', 'Unknown')
+                
                 return {
                     'status': 'success',
                     'analysis': parsed_response,
                     'metadata': {
                         'analyzer_version': '2.0',
-                        'framework': 'Django',
+                        'framework': framework,
                         'analysis_timestamp': datetime.datetime.now().isoformat()
                     }
                 }
@@ -199,12 +117,13 @@ For each pattern suggestion:
                 if json_match:
                     try:
                         parsed_response = json.loads(json_match.group())
+                        framework = parsed_response.get('framework_detection', {}).get('detected_framework', 'Unknown')
                         return {
                             'status': 'success',
                             'analysis': parsed_response,
                             'metadata': {
                                 'analyzer_version': '2.0',
-                                'framework': 'Django',
+                                'framework': framework,
                                 'analysis_timestamp': datetime.datetime.now().isoformat()
                             }
                         }
