@@ -1,40 +1,43 @@
-import { createContext, useState, useContext } from 'react';
+import { createContext, useContext, useState } from 'react';
+import { login as loginService } from '../services/authService';
 
-const AuthContext = createContext(null);
-
-export const AuthProvider = ({ children }) => {
+const AuthContext = createContext();
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
-  const login = async (credentials) => {
-    // Simulate login - just for demo
-    if (credentials.email && credentials.password) {
-      setUser({ email: credentials.email });
-      localStorage.setItem('demo_user', credentials.email);
-    } else {
-      throw new Error('Invalid credentials');
+  const register = async (userData) => {
+    try {
+      // Votre logique d'inscription ici (API call, etc.)
+      // Ne pas définir l'utilisateur après l'inscription
+      setUser(null);
+      return true;
+    } catch (error) {
+      throw error;
     }
   };
 
-  const register = async (userData) => {
-    // Simulate registration - just for demo
-    if (userData.email && userData.password) {
-      setUser({ email: userData.email });
-      localStorage.setItem('demo_user', userData.email);
-    } else {
-      throw new Error('Invalid user data');
+  const login = async (credentials) => {
+    try {
+      const response = await api.post('/login', credentials);
+      const token = response.headers.authorization.split(' ')[1];
+      localStorage.setItem('jwtToken', token);
+      // ...
+    } catch (error) {
+      console.error('Erreur de connexion :', error.message);
     }
   };
+  
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('demo_user');
+    localStorage.removeItem('jwtToken');
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, register, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
-export const useAuth = () => useContext(AuthContext); 
+export const useAuth = () => useContext(AuthContext);

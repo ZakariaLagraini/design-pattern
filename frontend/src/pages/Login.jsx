@@ -12,13 +12,12 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Simple validation
       if (!credentials.email || !credentials.password) {
         setError('Please fill in all fields');
         return;
       }
       await login(credentials);
-      navigate('/dashboard');
+      navigate('/pattern-generator');
     } catch (err) {
       setError(err.message || 'Login failed');
     }
