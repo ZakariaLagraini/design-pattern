@@ -16,6 +16,9 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
+    
     try {
       if (!userData.email || !userData.password) {
         setError('Please fill in all fields');
@@ -33,10 +36,14 @@ export default function Register() {
       await register(userData);
       setSuccess('Inscription réussie ! Veuillez vous connecter.');
       setTimeout(() => {
-        navigate('/login'); // Rediriger vers la page de connexion
+        navigate('/login');
       }, 2000);
     } catch (err) {
-      setError(err.message || 'Registration failed');
+      if (err.response?.status === 409) {
+        setError('Un compte existe déjà avec cette adresse email. Veuillez vous connecter ou utiliser une autre adresse.');
+      } else {
+        setError(err.response?.data?.message || 'Une erreur est survenue lors de l\'inscription.');
+      }
     }
   };
 

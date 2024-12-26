@@ -1,11 +1,41 @@
 spring:
   cloud:
     gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:5173"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            exposedHeaders:
+              - "Authorization"
+              - "Content-Type"
+            allowCredentials: true
+            maxAge: 3600
       routes:
         - id: user-management-service
           uri: lb://user-management-service
           predicates:
             - Path=/auth/**
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+          metadata:
+            cors:
+              allowedOrigins: 'http://localhost:5173'
+              allowedMethods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - OPTIONS
+              allowedHeaders: '*'
+              allowCredentials: true
         - id: catalog-service
           uri: lb://design-pattern-catalog-service
           predicates:
