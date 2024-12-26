@@ -13,7 +13,7 @@ The **Design Pattern Generator** is a comprehensive microservices-based applicat
 
 ---
 
-## API Endpoints
+## APIs Endpoints
 
 ### User Management Service
 | Method | Path                | Description                | User Authenticated | Available from UI |
