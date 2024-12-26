@@ -190,3 +190,219 @@ The project includes GitHub Actions workflows for:
 - **GitHub Actions**
 - **SonarCloud**
 
+## Detailed Services Description
+
+### 1. API Gateway (Port: 8080)
+- **Entry point for all client requests**
+- Routes requests to appropriate microservices
+- Handles cross-cutting concerns:
+    - **Authentication**
+    - **Request logging**
+    - **Rate limiting**
+    - **CORS configuration**
+
+#### Configuration
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: user-management-service
+          uri: lb://user-management-service
+          predicates:
+            - Path=/auth/**
+        - id: catalog-service
+          uri: lb://design-pattern-catalog-service
+          predicates:
+            - Path=/patterns/**
+        - id: recommendation-service
+          uri: lb://recommendation-engine-service
+          predicates:
+            - Path=/recommendations/**
+        - id: ai-service
+          uri: lb://ai-helper-service
+          predicates:
+            - Path=/ai/**
+```
+
+### 2. User Management Service (Port: 8081)
+- **Handles user authentication and authorization**
+- **Manages user profiles and preferences**
+- **Implements JWT-based security**
+
+#### Key Features
+- User registration and login
+- Password encryption with BCrypt
+- JWT token generation and validation
+- User profile management
+
+---
+
+### 3. Design Pattern Catalog Service (Port: 8082)
+- **Maintains the catalog of design patterns**
+- **Provides pattern details and implementations**
+
+#### Categories
+- **Creational Patterns**
+- **Structural Patterns**
+- **Behavioral Patterns**
+
+#### Database Schema
+- Design pattern historique
+- Implementation examples
+
+---
+
+### 4. Recommendation Engine Service (Port: 8083)
+- **Analyzes code and suggests appropriate patterns**
+- **Uses machine learning for pattern matching**
+- **Tracks user interactions for personalized recommendations**
+
+#### Features
+- Code analysis
+- Pattern matching algorithms
+- User interaction history
+- Personalized recommendations
+- Integration with AI service
+
+---
+
+### 5. AI Helper Service (Port: 8084)
+- **An intelligent chatbot that:**
+    - Provides AI-powered pattern suggestions
+    - Helps with pattern implementation
+
+#### Configuration
+```properties
+gemini.api.key=YOUR_API_KEY
+gemini.api.url=https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent
+```
+
+## Frontend Architecture
+
+### Technology Stack
+- **React 18**
+- **Vite**
+- **Tailwind CSS**
+- **React Router v6**
+- **Axios for API calls**
+
+---
+
+## Database Architecture
+
+### User Database
+- User profiles
+- Authentication data
+- User preferences
+
+### Pattern Catalog Database
+- Design pattern historique
+- Implementation examples
+
+### Recommendation Database
+- User interactions
+- Pattern usage statistics
+- Recommendation history
+
+---
+
+## Security Implementation
+
+### 1. JWT Authentication
+```java
+public class JwtTokenProvider {
+    private final String secretKey;
+    private final long validityInMilliseconds;
+
+    public String createToken(String username) {
+        // Token generation logic
+    }
+
+    public boolean validateToken(String token) {
+        // Token validation logic
+    }
+}
+```
+### 2. Password Encryption
+```java
+@Configuration
+public class SecurityConfig {
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+```
+
+## Deployment
+
+### Docker Containers
+```yaml
+version: '3.8'
+services:
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8080:8080"
+    
+  user-service:
+    build: ./user-management-service
+    ports:
+      - "8081:8081"
+    
+  pattern-service:
+    build: ./design-pattern-catalog-service
+    ports:
+      - "8082:8082"
+    
+  # Other services...
+```
+
+## CI/CD Pipeline
+- **GitHub Actions workflow**
+- **Automated testing**
+- **Code quality checks**
+- **Docker image building**
+- **Container registry publishing**
+
+---
+
+## Monitoring and Logging
+- **Spring Boot Actuator for metrics**
+- **Centralized logging with ELK Stack**
+- **Performance monitoring**
+- **Error tracking**
+
+---
+
+## Future Enhancements
+
+### Pattern Analysis
+- Enhanced AI integration
+- More accurate pattern matching
+- Support for more programming languages
+
+### User Experience
+- Interactive pattern visualization
+- Code generation improvements
+- Pattern comparison tools
+
+### Integration
+- IDE plugins
+- Git repository analysis
+- Team collaboration features
+
+---
+
+## Contributing
+1. Fork the repository.
+2. Create your feature branch.
+3. Commit your changes.
+4. Push to the branch.
+5. Create a Pull Request.
+
+---
+
+## License
+This project is licensed under the MIT License - see the `LICENSE.md` file for details.
