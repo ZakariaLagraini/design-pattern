@@ -17,7 +17,7 @@
         <java.version>17</java.version>
         <sonar.organization>design-pattern</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-        <sonar.projectKey>design-pattern_design-pattern</sonar.projectKey>
+        <sonar.projectKey>design-pattern_api-gateway</sonar.projectKey>
     </properties>
     <dependencies>
         <dependency>

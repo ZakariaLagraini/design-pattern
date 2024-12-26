@@ -65,7 +65,7 @@ jobs:
         cd service-registry
         chmod +x mvnw
         ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.projectKey=design-pattern_design-pattern \
+          -Dsonar.projectKey=design-pattern_service-registry \
           -Dsonar.organization=design-pattern \
           -Dsonar.host.url=https://sonarcloud.io \
           -Dsonar.login=${{ secrets.SONAR_TOKEN }}
@@ -79,7 +79,7 @@ jobs:
         cd api-gateway
         chmod +x mvnw
         ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.projectKey=design-pattern_design-pattern \
+          -Dsonar.projectKey=design-pattern_api-gateway \
           -Dsonar.organization=design-pattern \
           -Dsonar.host.url=https://sonarcloud.io \
           -Dsonar.login=${{ secrets.SONAR_TOKEN }}
@@ -96,7 +96,7 @@ jobs:
         cd user-management-service
         chmod +x mvnw
         ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.projectKey=design-pattern_design-pattern \
+          -Dsonar.projectKey=design-pattern_user-management \
           -Dsonar.organization=design-pattern \
           -Dsonar.host.url=https://sonarcloud.io \
           -Dsonar.login=${{ secrets.SONAR_TOKEN }}
@@ -113,7 +113,7 @@ jobs:
         cd design-pattern-catalog-service
         chmod +x mvnw
         ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.projectKey=design-pattern_design-pattern \
+          -Dsonar.projectKey=design-pattern_catalog \
           -Dsonar.organization=design-pattern \
           -Dsonar.host.url=https://sonarcloud.io \
           -Dsonar.login=${{ secrets.SONAR_TOKEN }}
@@ -127,7 +127,7 @@ jobs:
         cd recommendation-engine-service
         chmod +x mvnw
         ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.projectKey=design-pattern_design-pattern \
+          -Dsonar.projectKey=design-pattern_recommendation \
           -Dsonar.organization=design-pattern \
           -Dsonar.host.url=https://sonarcloud.io \
           -Dsonar.login=${{ secrets.SONAR_TOKEN }}
@@ -141,7 +141,7 @@ jobs:
         cd ai-helper-service
         chmod +x mvnw
         ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.projectKey=design-pattern_design-pattern \
+          -Dsonar.projectKey=design-pattern_ai-helper \
           -Dsonar.organization=design-pattern \
           -Dsonar.host.url=https://sonarcloud.io \
           -Dsonar.login=${{ secrets.SONAR_TOKEN }}
