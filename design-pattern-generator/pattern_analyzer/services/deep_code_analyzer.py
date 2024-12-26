@@ -25,12 +25,12 @@ class DeepCodeAnalyzer:
             google_api_key=os.getenv('GOOGLE_API_KEY')
         )
 
-        # Create a prompt template focused on Django backend patterns
+        # Enhanced prompt template with more detailed code examples
         self.prompt_template = PromptTemplate(
             input_variables=["code_content"],
             template="""
-Analyze this Django backend codebase and suggest appropriate design patterns.
-Focus on patterns that would improve the code structure and maintainability.
+Analyze this Django backend codebase and provide detailed design pattern recommendations with implementation examples.
+Focus on practical, implementable patterns that would improve the code structure and maintainability.
 
 Code to analyze:
 {code_content}
@@ -43,7 +43,12 @@ Please provide a detailed analysis in the following format:
             "category": "Architectural/Creational/Structural/Behavioral",
             "implementation": "How it's currently implemented",
             "effectiveness": "How well it works",
-            "suggestions": "How to improve it"
+            "suggestions": "How to improve it",
+            "current_files": ["List of files currently using this pattern"],
+            "code_example": {{
+                "current": "// Current implementation example",
+                "improved": "// Suggested improved implementation"
+            }}
         }}
     ],
     "recommended_patterns": [
@@ -52,13 +57,45 @@ Please provide a detailed analysis in the following format:
             "category": "Architectural/Creational/Structural/Behavioral",
             "purpose": "Why this pattern would be useful",
             "implementation_guide": {{
-                "steps": ["Step by step implementation guide"],
-                "code_example": "Example code showing implementation",
-                "files_to_modify": ["List of files that need changes"],
-                "dependencies": ["Required packages or dependencies"]
+                "description": "Detailed implementation steps",
+                "files_to_create": [
+                    {{
+                        "path": "path/to/new/file.py",
+                        "purpose": "What this file will do",
+                        "code_example": "Complete code example with comments"
+                    }}
+                ],
+                "files_to_modify": [
+                    {{
+                        "path": "path/to/existing/file.py",
+                        "changes": [
+                            {{
+                                "description": "What to change",
+                                "current_code": "// Current code snippet",
+                                "new_code": "// New code snippet",
+                                "explanation": "Why this change is needed"
+                            }}
+                        ]
+                    }}
+                ],
+                "dependencies": [
+                    {{
+                        "name": "Package name",
+                        "version": "Version requirement",
+                        "purpose": "Why this dependency is needed"
+                    }}
+                ]
             }},
-            "benefits": ["List of benefits"],
-            "priority": "High/Medium/Low"
+            "benefits": ["List of specific benefits"],
+            "challenges": ["Potential implementation challenges"],
+            "priority": "High/Medium/Low",
+            "estimated_effort": "Story points or time estimate",
+            "testing_considerations": [
+                {{
+                    "aspect": "What to test",
+                    "test_example": "Example test code"
+                }}
+            ]
         }}
     ],
     "architecture_suggestions": {{
@@ -67,22 +104,67 @@ Please provide a detailed analysis in the following format:
             {{
                 "area": "Area of improvement",
                 "suggestion": "Detailed suggestion",
-                "implementation": "How to implement",
+                "implementation": {{
+                    "steps": ["Step-by-step implementation guide"],
+                    "files": [
+                        {{
+                            "path": "path/to/file.py",
+                            "changes": {{
+                                "before": "// Current code",
+                                "after": "// Suggested code",
+                                "explanation": "Why this change helps"
+                            }}
+                        }}
+                    ],
+                    "configuration": {{
+                        "file": "path/to/config/file",
+                        "changes": "Required configuration changes"
+                    }}
+                }},
                 "priority": "High/Medium/Low"
             }}
         ]
-    }}
+    }},
+    "implementation_roadmap": [
+        {{
+            "phase": "Phase number",
+            "patterns": ["Patterns to implement"],
+            "description": "Phase description",
+            "tasks": [
+                {{
+                    "description": "Task description",
+                    "files": ["Files involved"],
+                    "code_changes": {{
+                        "before": "// Current code",
+                        "after": "// New code"
+                    }},
+                    "effort": "Estimated effort",
+                    "dependencies": ["Required changes"]
+                }}
+            ]
+        }}
+    ]
 }}
 
-Focus on Django-specific patterns and best practices. Consider:
-1. API design patterns
+Focus on Django-specific patterns and best practices, including:
+1. Django REST framework patterns
 2. Service layer patterns
-3. Repository patterns
-4. Authentication patterns
+3. Repository/Manager patterns
+4. Authentication/Permission patterns
 5. Middleware patterns
 6. Caching strategies
 7. Database access patterns
 8. Error handling patterns
+9. Testing patterns
+10. Async patterns
+
+For each pattern suggestion:
+- Provide complete, working code examples
+- Include docstrings and comments
+- Show both current and suggested implementations
+- Include unit test examples
+- Specify exact file locations and changes
+- Consider Django best practices
 """
         )
 
@@ -96,7 +178,7 @@ Focus on Django-specific patterns and best practices. Consider:
             code_content = self._prepare_code_content(scan_results)
             response = await self.chain.arun(code_content=code_content)
             
-            # Clean and parse the response
+            # Clean up the response
             cleaned_response = response.replace('```json\n', '').replace('\n```', '')
             
             try:
@@ -105,16 +187,34 @@ Focus on Django-specific patterns and best practices. Consider:
                     'status': 'success',
                     'analysis': parsed_response,
                     'metadata': {
-                        'analyzer_version': '1.0',
+                        'analyzer_version': '2.0',
                         'framework': 'Django',
                         'analysis_timestamp': datetime.datetime.now().isoformat()
                     }
                 }
             except json.JSONDecodeError as e:
-                self.logger.error(f"JSON parsing error: {str(e)}")
+                # Try to extract JSON from the response if it contains other text
+                import re
+                json_match = re.search(r'\{[\s\S]*\}', response)
+                if json_match:
+                    try:
+                        parsed_response = json.loads(json_match.group())
+                        return {
+                            'status': 'success',
+                            'analysis': parsed_response,
+                            'metadata': {
+                                'analyzer_version': '2.0',
+                                'framework': 'Django',
+                                'analysis_timestamp': datetime.datetime.now().isoformat()
+                            }
+                        }
+                    except:
+                        pass
+                
                 return {
                     'status': 'error',
                     'message': 'Failed to parse analysis results',
+                    'error': str(e),
                     'raw_response': response
                 }
 
