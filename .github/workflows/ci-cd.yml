@@ -70,10 +70,11 @@ jobs:
       run: |
         cd service-registry
         chmod +x mvnw
-        ./mvnw clean verify sonar:sonar \
-          -Dsonar.projectKey=design-pattern_service-registry \
+        ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.projectKey=design-pattern_design-pattern \
           -Dsonar.organization=design-pattern \
-          -Dsonar.host.url=https://sonarcloud.io
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
         
     - name: Build and Analyze User Management Service
       env:
@@ -81,21 +82,23 @@ jobs:
       run: |
         cd user-management-service
         chmod +x mvnw
-        ./mvnw clean verify sonar:sonar \
-          -Dsonar.projectKey=design-pattern_user-management \
+        ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.projectKey=design-pattern_design-pattern \
           -Dsonar.organization=design-pattern \
-          -Dsonar.host.url=https://sonarcloud.io
-        
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
     - name: Build and Analyze Design Pattern Catalog Service
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd design-pattern-catalog-service
         chmod +x mvnw
-        ./mvnw clean verify sonar:sonar \
-          -Dsonar.projectKey=design-pattern_catalog \
+        ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.projectKey=design-pattern_design-pattern \
           -Dsonar.organization=design-pattern \
-          -Dsonar.host.url=https://sonarcloud.io
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
         
     - name: Build and Analyze Recommendation Engine Service
       env:
@@ -103,10 +106,11 @@ jobs:
       run: |
         cd recommendation-engine-service
         chmod +x mvnw
-        ./mvnw clean verify sonar:sonar \
-          -Dsonar.projectKey=design-pattern_recommendation \
+        ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.projectKey=design-pattern_design-pattern \
           -Dsonar.organization=design-pattern \
-          -Dsonar.host.url=https://sonarcloud.io
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
         
     - name: Build and Analyze AI Helper Service
       env:
@@ -114,10 +118,11 @@ jobs:
       run: |
         cd ai-helper-service
         chmod +x mvnw
-        ./mvnw clean verify sonar:sonar \
-          -Dsonar.projectKey=design-pattern_ai-helper \
+        ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.projectKey=design-pattern_design-pattern \
           -Dsonar.organization=design-pattern \
-          -Dsonar.host.url=https://sonarcloud.io
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
         
     - name: Build and Analyze API Gateway
       env:
@@ -125,10 +130,11 @@ jobs:
       run: |
         cd api-gateway
         chmod +x mvnw
-        ./mvnw clean verify sonar:sonar \
-          -Dsonar.projectKey=design-pattern_api-gateway \
+        ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.projectKey=design-pattern_design-pattern \
           -Dsonar.organization=design-pattern \
-          -Dsonar.host.url=https://sonarcloud.io
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
     # Upload artifacts for next job
     - name: Upload build artifacts
