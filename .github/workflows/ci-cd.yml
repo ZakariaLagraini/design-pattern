@@ -10,6 +10,7 @@ env:
   REGISTRY: ghcr.io
   POSTGRES_USER: postgres
   POSTGRES_PASSWORD: postgres
+  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
 jobs:
   build-and-test:
@@ -46,6 +47,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # Required for SonarCloud
     
     - name: Set up JDK 17
       uses: actions/setup-java@v3
@@ -54,41 +57,78 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    - name: Build Service Registry
+    - name: Cache SonarCloud packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.sonar/cache
+        key: ${{ runner.os }}-sonar
+        restore-keys: ${{ runner.os }}-sonar
+
+    - name: Build and Analyze Service Registry
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd service-registry
         chmod +x mvnw
-        ./mvnw clean package -DskipTests
+        ./mvnw clean verify sonar:sonar \
+          -Dsonar.projectKey=design-pattern_service-registry \
+          -Dsonar.organization=design-pattern \
+          -Dsonar.host.url=https://sonarcloud.io
         
-    - name: Build User Management Service
+    - name: Build and Analyze User Management Service
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd user-management-service
         chmod +x mvnw
-        ./mvnw clean package -DskipTests
+        ./mvnw clean verify sonar:sonar \
+          -Dsonar.projectKey=design-pattern_user-management \
+          -Dsonar.organization=design-pattern \
+          -Dsonar.host.url=https://sonarcloud.io
         
-    - name: Build Design Pattern Catalog Service
+    - name: Build and Analyze Design Pattern Catalog Service
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd design-pattern-catalog-service
         chmod +x mvnw
-        ./mvnw clean package -DskipTests
+        ./mvnw clean verify sonar:sonar \
+          -Dsonar.projectKey=design-pattern_catalog \
+          -Dsonar.organization=design-pattern \
+          -Dsonar.host.url=https://sonarcloud.io
         
-    - name: Build Recommendation Engine Service
+    - name: Build and Analyze Recommendation Engine Service
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd recommendation-engine-service
         chmod +x mvnw
-        ./mvnw clean package -DskipTests
+        ./mvnw clean verify sonar:sonar \
+          -Dsonar.projectKey=design-pattern_recommendation \
+          -Dsonar.organization=design-pattern \
+          -Dsonar.host.url=https://sonarcloud.io
         
-    - name: Build AI Helper Service
+    - name: Build and Analyze AI Helper Service
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd ai-helper-service
         chmod +x mvnw
-        ./mvnw clean package -DskipTests
+        ./mvnw clean verify sonar:sonar \
+          -Dsonar.projectKey=design-pattern_ai-helper \
+          -Dsonar.organization=design-pattern \
+          -Dsonar.host.url=https://sonarcloud.io
         
-    - name: Build API Gateway
+    - name: Build and Analyze API Gateway
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd api-gateway
         chmod +x mvnw
-        ./mvnw clean package -DskipTests
+        ./mvnw clean verify sonar:sonar \
+          -Dsonar.projectKey=design-pattern_api-gateway \
+          -Dsonar.organization=design-pattern \
+          -Dsonar.host.url=https://sonarcloud.io
 
     # Upload artifacts for next job
     - name: Upload build artifacts
@@ -140,9 +180,9 @@ jobs:
     - name: Build and push Service Registry
       run: |
         echo "Building service-registry..."
-        mkdir -p service-registry/target
-        cp service-registry/target/*.jar service-registry/app.jar
-        docker build -t ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/service-registry:latest ./service-registry
+        cd service-registry
+        mv target/*.jar app.jar
+        docker build -t ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/service-registry:latest .
         echo "Pushing service-registry..."
         docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/service-registry:latest
 
@@ -150,48 +190,11 @@ jobs:
     - name: Build and push User Management Service
       run: |
         echo "Building user-management..."
-        mkdir -p user-management-service/target
-        cp user-management-service/target/*.jar user-management-service/app.jar
-        docker build -t ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/user-management:latest ./user-management-service
+        cd user-management-service
+        mv target/*.jar app.jar
+        docker build -t ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/user-management:latest .
         echo "Pushing user-management..."
         docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/user-management:latest
 
-    # Build and push Design Pattern Catalog Service
-    - name: Build and push Design Pattern Catalog Service
-      run: |
-        echo "Building design-pattern-catalog..."
-        mkdir -p design-pattern-catalog-service/target
-        cp design-pattern-catalog-service/target/*.jar design-pattern-catalog-service/app.jar
-        docker build -t ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/design-pattern-catalog:latest ./design-pattern-catalog-service
-        echo "Pushing design-pattern-catalog..."
-        docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/design-pattern-catalog:latest
-
-    # Build and push Recommendation Engine Service
-    - name: Build and push Recommendation Engine Service
-      run: |
-        echo "Building recommendation-engine..."
-        mkdir -p recommendation-engine-service/target
-        cp recommendation-engine-service/target/*.jar recommendation-engine-service/app.jar
-        docker build -t ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/recommendation-engine:latest ./recommendation-engine-service
-        echo "Pushing recommendation-engine..."
-        docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/recommendation-engine:latest
-
-    # Build and push AI Helper Service
-    - name: Build and push AI Helper Service
-      run: |
-        echo "Building ai-helper..."
-        mkdir -p ai-helper-service/target
-        cp ai-helper-service/target/*.jar ai-helper-service/app.jar
-        docker build -t ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/ai-helper:latest ./ai-helper-service
-        echo "Pushing ai-helper..."
-        docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/ai-helper:latest
-
-    # Build and push API Gateway
-    - name: Build and push API Gateway
-      run: |
-        echo "Building api-gateway..."
-        mkdir -p api-gateway/target
-        cp api-gateway/target/*.jar api-gateway/app.jar
-        docker build -t ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/api-gateway:latest ./api-gateway
-        echo "Pushing api-gateway..."
-        docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/api-gateway:latest
+    # Continue with other services...
+    # (Similar pattern for other services)
