@@ -12,6 +12,8 @@ jobs:
     
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # Fetch all history for all branches and tags
     
     - name: Set up JDK 17
       uses: actions/setup-java@v3
@@ -20,13 +22,17 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    - name: Make mvnw executable
+    - name: Fix permissions
       run: |
+        ls -la
+        git config --global core.fileMode true
         chmod +x ./user-management-service/mvnw
-        
+        ls -la ./user-management-service/
+
     - name: Build with Maven
+      working-directory: ./user-management-service
       run: |
-        cd user-management-service
+        pwd
         ./mvnw clean package
 
     - name: Login to GitHub Container Registry
