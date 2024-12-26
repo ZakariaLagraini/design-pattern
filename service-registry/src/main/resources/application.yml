@@ -24,12 +24,19 @@ management:
   tracing:
     sampling:
       probability: 1.0
-    zipkin:
-      base-url: http://zipkin:9411
+    propagation:
+      type: w3c
+    baggage:
+      remote-fields: "x-request-id"
+      correlation:
+        fields: "x-request-id"
   prometheus:
     metrics:
       export:
         enabled: true
+  zipkin:
+    tracing:
+      endpoint: http://zipkin:9411/api/v2/spans
 
 logging:
   pattern:
