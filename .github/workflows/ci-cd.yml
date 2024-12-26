@@ -57,10 +57,18 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    # Build all services first
+    # Build all services
     - name: Build Service Registry
       run: |
         cd service-registry
+        chmod +x mvnw
+        ./mvnw clean package -DskipTests
+        mkdir -p target/docker
+        cp target/*.jar target/docker/app.jar
+
+    - name: Build API Gateway
+      run: |
+        cd api-gateway
         chmod +x mvnw
         ./mvnw clean package -DskipTests
         mkdir -p target/docker
@@ -77,6 +85,22 @@ jobs:
     - name: Build Design Pattern Catalog Service
       run: |
         cd design-pattern-catalog-service
+        chmod +x mvnw
+        ./mvnw clean package -DskipTests
+        mkdir -p target/docker
+        cp target/*.jar target/docker/app.jar
+
+    - name: Build Recommendation Engine Service
+      run: |
+        cd recommendation-engine-service
+        chmod +x mvnw
+        ./mvnw clean package -DskipTests
+        mkdir -p target/docker
+        cp target/*.jar target/docker/app.jar
+
+    - name: Build AI Helper Service
+      run: |
+        cd ai-helper-service
         chmod +x mvnw
         ./mvnw clean package -DskipTests
         mkdir -p target/docker
@@ -101,7 +125,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    # Download artifacts from previous job
+    # Download artifacts
     - name: Download build artifacts
       uses: actions/download-artifact@v3
       with:
@@ -119,7 +143,7 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    # Build and push Service Registry
+    # Build and push all services
     - name: Build and push Service Registry
       run: |
         echo "Building service-registry..."
@@ -129,7 +153,15 @@ jobs:
         echo "Pushing service-registry..."
         docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/service-registry:latest
 
-    # Build and push User Management Service
+    - name: Build and push API Gateway
+      run: |
+        echo "Building api-gateway..."
+        cd api-gateway
+        cp ../api-gateway/target/docker/app.jar app.jar
+        docker build -t ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/api-gateway:latest .
+        echo "Pushing api-gateway..."
+        docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/api-gateway:latest
+
     - name: Build and push User Management Service
       run: |
         echo "Building user-management..."
@@ -139,4 +171,29 @@ jobs:
         echo "Pushing user-management..."
         docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/user-management:latest
 
-    # Continue with other services...
+    - name: Build and push Design Pattern Catalog Service
+      run: |
+        echo "Building design-pattern-catalog..."
+        cd design-pattern-catalog-service
+        cp ../design-pattern-catalog-service/target/docker/app.jar app.jar
+        docker build -t ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/design-pattern-catalog:latest .
+        echo "Pushing design-pattern-catalog..."
+        docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/design-pattern-catalog:latest
+
+    - name: Build and push Recommendation Engine Service
+      run: |
+        echo "Building recommendation-engine..."
+        cd recommendation-engine-service
+        cp ../recommendation-engine-service/target/docker/app.jar app.jar
+        docker build -t ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/recommendation-engine:latest .
+        echo "Pushing recommendation-engine..."
+        docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/recommendation-engine:latest
+
+    - name: Build and push AI Helper Service
+      run: |
+        echo "Building ai-helper..."
+        cd ai-helper-service
+        cp ../ai-helper-service/target/docker/app.jar app.jar
+        docker build -t ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/ai-helper:latest .
+        echo "Pushing ai-helper..."
+        docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/design-pattern/ai-helper:latest
