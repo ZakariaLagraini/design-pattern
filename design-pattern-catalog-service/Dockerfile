@@ -1,7 +1,6 @@
 FROM openjdk:17-jdk-slim
 WORKDIR /app
-ARG JAR_FILE=target/*.jar
-COPY ${JAR_FILE} app.jar
+COPY app.jar app.jar
 
 ENV SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-catalog:5432/catalog_db
 ENV SPRING_DATASOURCE_USERNAME=postgres

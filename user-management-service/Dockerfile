@@ -5,8 +5,7 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 
 # Copy the JAR file into the container
-ARG JAR_FILE=target/*.jar
-COPY ${JAR_FILE} app.jar
+COPY app.jar app.jar
 
 # Set environment variables
 ENV SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-user:5432/user_db
