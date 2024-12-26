@@ -19,5 +19,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('pattern_analyzer.urls')),  # Include the pattern_analyzer URLs
+    path('api/analyze/', include('pattern_analyzer.urls')),  # This prefix is already included
 ]

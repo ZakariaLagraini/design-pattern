@@ -18,6 +18,14 @@ spring:
           uri: lb://ai-helper-service
           predicates:
             - Path=/ai/**
+        - id: design-pattern-generator
+          uri: lb://design-pattern-generator
+          predicates:
+            - Path=/api/analyze/**
+        - id: pattern-analyzer
+          uri: lb://design-pattern-generator
+          predicates:
+            - Path=/api/analyze/**
 
 management:
   endpoints:
