@@ -20,8 +20,8 @@ jobs:
       postgres-user:
         image: postgres:latest
         env:
-          POSTGRES_USER: ${{ env.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: Zaratapa1
           POSTGRES_DB: user_db
         ports:
           - 5432:5432
@@ -34,8 +34,8 @@ jobs:
       postgres-catalog:
         image: postgres:latest
         env:
-          POSTGRES_USER: ${{ env.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: Zaratapa1
           POSTGRES_DB: catalog_db
         ports:
           - 5433:5432
@@ -48,8 +48,8 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        fetch-depth: 0  # Required for SonarCloud
-    
+        fetch-depth: 0
+
     - name: Set up JDK 17
       uses: actions/setup-java@v3
       with:
@@ -57,28 +57,25 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    - name: Cache SonarCloud packages
-      uses: actions/cache@v3
-      with:
-        path: ~/.sonar/cache
-        key: ${{ runner.os }}-sonar
-        restore-keys: ${{ runner.os }}-sonar
-
-    - name: Build and Analyze Service Registry
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    # Start Service Registry first
+    - name: Build and Start Service Registry
       run: |
         cd service-registry
         chmod +x mvnw
-        ./mvnw verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.projectKey=design-pattern_design-pattern \
-          -Dsonar.organization=design-pattern \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-        
+        ./mvnw spring-boot:run &
+        echo "Waiting for Service Registry to start..."
+        while ! nc -z localhost 8761; do
+          sleep 1
+        done
+        echo "Service Registry is up"
+
+    # Then run other services
     - name: Build and Analyze User Management Service
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/user_db
+        SPRING_DATASOURCE_USERNAME: postgres
+        SPRING_DATASOURCE_PASSWORD: Zaratapa1
       run: |
         cd user-management-service
         chmod +x mvnw
@@ -91,6 +88,9 @@ jobs:
     - name: Build and Analyze Design Pattern Catalog Service
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5433/catalog_db
+        SPRING_DATASOURCE_USERNAME: postgres
+        SPRING_DATASOURCE_PASSWORD: Zaratapa1
       run: |
         cd design-pattern-catalog-service
         chmod +x mvnw
