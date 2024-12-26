@@ -1,5 +1,7 @@
 # Design Pattern Generator - API Documentation
 
+![Microservices Architecture](assets/Architecture%20of%20our%20microservice.png)
+
 ## Project Overview
 The **Design Pattern Generator** is a comprehensive microservices-based application that helps developers identify and implement design patterns in their code. The system consists of multiple services:
 
