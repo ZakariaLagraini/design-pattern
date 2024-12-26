@@ -18,11 +18,6 @@ spring:
           uri: lb://ai-helper-service
           predicates:
             - Path=/ai/**
-      default-filters:
-        - TraceId
-      filter:
-        trace-id:
-          enabled: true
 
 management:
   endpoints:
@@ -32,17 +27,15 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
-    distribution:
-      percentiles-histogram:
-        http.server.requests: true
   tracing:
     sampling:
       probability: 1.0
-    propagation:
-      type: w3c
-  zipkin:
-    tracing:
-      endpoint: http://zipkin:9411/api/v2/spans
+    zipkin:
+      base-url: http://zipkin:9411
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 
 logging:
   pattern:
