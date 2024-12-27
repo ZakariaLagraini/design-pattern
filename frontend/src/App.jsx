@@ -8,6 +8,8 @@ import Dashboard from './pages/Dashboard';
 import PatternGenerator from './pages/PatternGenerator';
 import ChatBot from './components/ChatBot';
 import GenerationCatalog from './pages/GenerationCatalog';
+import DesignPatterns from './pages/DesignPatterns';
+import AboutUs from './pages/AboutUs';
 
 function App() {
   return (
@@ -22,6 +24,8 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/generator" element={<PatternGenerator />} />
             <Route path="/catalog" element={<GenerationCatalog />} />
+            <Route path="/patterns" element={<DesignPatterns />} />
+            <Route path="/about" element={<AboutUs />} />
           </Routes>
           <ChatBot />
         </div>

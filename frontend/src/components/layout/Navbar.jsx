@@ -11,6 +11,8 @@ export default function Navbar() {
     { name: 'Home', href: '/', current: true },
     { name: 'Pattern Generator', href: '/generator', current: false },
     { name: 'Generation Catalog', href: '/catalog', current: false },
+    { name: 'Design Patterns', href: '/patterns', current: false },
+    { name: 'About Us', href: '/about', current: false },
     ...(user
       ? [
           { name: 'Dashboard', href: '/dashboard', current: false },
