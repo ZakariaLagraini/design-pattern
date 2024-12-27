@@ -20,7 +20,7 @@ class DeepCodeAnalyzer:
         
         # Initialize LangChain with Gemini
         self.llm = ChatGoogleGenerativeAI(
-            model="gemini-pro",
+            model="gemini-1.5-flash",
             temperature=0.7,
             google_api_key=os.getenv('GOOGLE_API_KEY')
         )
@@ -53,17 +53,17 @@ Provide analysis in this simplified JSON format:
                 "List of identified weaknesses or areas for improvement"
             ]
         }},
-        "suggested_patterns": [
+        "suggested_design_patterns": [
             {{
                 "name": "Pattern name",
-                "type": "Creational/Structural/Behavioral",
+                "type": "Creational/Structural/Behavioral/etc ..",
                 "priority": "High/Medium/Low",
                 "target_files": [
                     "Files where this pattern should be implemented"
                 ],
                 "implementation": {{
                     "description": "Brief description of how to implement",
-                    "example": "// Simple code example showing implementation"
+                    "example": "//the whole code implemntation"
                 }}
             }}
         ]

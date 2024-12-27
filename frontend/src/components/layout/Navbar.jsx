@@ -9,10 +9,11 @@ export default function Navbar() {
 
   const navigation = [
     { name: 'Home', href: '/', current: true },
+    { name: 'Pattern Generator', href: '/generator', current: false },
+    { name: 'Generation Catalog', href: '/catalog', current: false },
     ...(user
       ? [
           { name: 'Dashboard', href: '/dashboard', current: false },
-          { name: 'Pattern Generator', href: '/generator', current: false },
         ]
       : []),
   ];
