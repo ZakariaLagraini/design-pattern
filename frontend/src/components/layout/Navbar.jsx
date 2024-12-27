@@ -15,7 +15,7 @@ export default function Navbar() {
     { name: 'About Us', href: '/about', current: false },
     ...(user
       ? [
-          { name: 'Dashboard', href: '/dashboard', current: false },
+          // { name: 'Dashboard', href: '/dashboard', current: false },
         ]
       : []),
   ];

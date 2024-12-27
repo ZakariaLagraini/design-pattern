@@ -43,7 +43,7 @@ spring:
         - id: catalog-service
           uri: lb://design-pattern-catalog-service
           predicates:
-            - Path=/design_patterns/**
+            - Path=/patterns/**
         - id: recommendation-service
           uri: lb://recommendation-engine-service
           predicates:

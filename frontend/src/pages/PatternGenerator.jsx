@@ -75,6 +75,11 @@ export default function PatternGenerator() {
 
       if (response.data && response.data.status === 'success') {
         setAnalysis(response.data);
+
+        // Store the analysis data in local storage
+        const existingGenerations = JSON.parse(localStorage.getItem('generations')) || [];
+        existingGenerations.push(response.data.analysis);
+        localStorage.setItem('generations', JSON.stringify(existingGenerations));
       } else {
         setError('No analysis data received from server');
       }
@@ -86,30 +91,46 @@ export default function PatternGenerator() {
     }
   };
 
-  const handleSaveGeneration = async () => {
+  const handleSaveGeneration = () => {
     if (!analysis) return;
 
-    const newGeneration = {
-      id: Date.now(), // Simple way to generate unique IDs
-      project_path: projectPath,
-      timestamp: new Date().toISOString(),
-      analysis_result: analysis
-    };
+    try {
+      setIsSaving(true);
 
-    // Get existing generations from localStorage
-    const existingGenerations = JSON.parse(localStorage.getItem('generations') || '[]');
-    
-    // Add new generation
-    const updatedGenerations = [...existingGenerations, newGeneration];
-    
-    // Save to localStorage
-    localStorage.setItem('generations', JSON.stringify(updatedGenerations));
-    
-    // Show success message
-    toast.success('Generation saved successfully!');
-    
-    // Navigate to catalog
-    navigate('/catalog');
+      // Prepare the data to be formatted
+      const generationData = {
+        id: new Date().getTime(), // Unique ID for the generation
+        project_path: projectPath,
+        analysis_timestamp: new Date().toISOString(),
+        framework_detection: analysis.analysis.analysis.framework_detection,
+        suggested_design_patterns: analysis.analysis.analysis.suggested_design_patterns.map(pattern => ({
+          name: pattern.name,
+          type: pattern.type,
+          priority: pattern.priority,
+          target_files: pattern.target_files,
+          implementation: {
+            description: pattern.implementation.description,
+            example: pattern.implementation.example
+          }
+        }))
+      };
+
+      // Store the generation data in local storage
+      const existingGenerations = JSON.parse(localStorage.getItem('generations')) || [];
+      existingGenerations.push(generationData);
+      localStorage.setItem('generations', JSON.stringify(existingGenerations));
+
+      // Show success message
+      toast.success('Generation saved successfully!');
+
+      // Navigate to catalog
+      navigate('/catalog');
+    } catch (err) {
+      console.error('Error saving generation:', err);
+      toast.error('Failed to save generation');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   useEffect(() => {

@@ -10,6 +10,7 @@ import ChatBot from './components/ChatBot';
 import GenerationCatalog from './pages/GenerationCatalog';
 import DesignPatterns from './pages/DesignPatterns';
 import AboutUs from './pages/AboutUs';
+import GenerationDetails from './pages/GenerationDetails';
 
 function App() {
   return (
@@ -21,9 +22,9 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/generator" element={<PatternGenerator />} />
             <Route path="/catalog" element={<GenerationCatalog />} />
+            <Route path="/generator/:id" element={<GenerationDetails />} />
             <Route path="/patterns" element={<DesignPatterns />} />
             <Route path="/about" element={<AboutUs />} />
           </Routes>
