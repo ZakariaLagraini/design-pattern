@@ -18,7 +18,7 @@ export default function Login() {
         return;
       }
       await login(credentials);
-      navigate('/pattern-generator');
+      navigate('/generator');
     } catch (err) {
       setError(err.message || 'Login failed');
     }

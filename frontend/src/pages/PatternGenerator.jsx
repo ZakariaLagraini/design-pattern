@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 
 export default function PatternGenerator() {
-  const [basePath, setBasePath] = useState('C:/Users/pc/Desktop/project/design-pattern/');
+  // const [basePath, setBasePath] = useState('C:/Users/pc/Desktop/project/design-pattern/');
+  const [basePath, setBasePath] = useState('C:/Users/MSI/Desktop/project/design-pattern/');
   const [projectPath, setProjectPath] = useState('');
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);

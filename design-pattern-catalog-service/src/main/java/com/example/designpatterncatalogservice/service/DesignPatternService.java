@@ -17,6 +17,9 @@ public class DesignPatternService {
         DesignPattern designPattern = new DesignPattern(userId, texte);
         return repository.save(designPattern);
     }
+    public void deleteDesignPatternById(Long id) {
+        repository.deleteById(id);
+}
 
     public List<DesignPattern> findDesignPatternsByUserId(Long userId) {
         return repository.findByUserId(userId);

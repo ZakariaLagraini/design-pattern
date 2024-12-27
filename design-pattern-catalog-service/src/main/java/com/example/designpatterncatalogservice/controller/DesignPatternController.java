@@ -23,6 +23,12 @@ public class DesignPatternController {
         return ResponseEntity.ok(savedDesignPattern);
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteDesignPatternById(@PathVariable Long id) {
+        service.deleteDesignPatternById(id);
+        return ResponseEntity.noContent().build(); // 204 No Content
+    }
+
     // Endpoint GET pour récupérer les textes des DesignPatterns par userId
     @GetMapping
     public ResponseEntity<List<String>> getDesignPatternTextsByUserId(@RequestParam Long userId) {
