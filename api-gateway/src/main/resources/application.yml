@@ -6,6 +6,7 @@ spring:
           "[/]":
             allowedOrigins:
               - "http://localhost:5173"
+              - "http://localhost:5174"
             allowedMethods:
               - GET
               - POST
@@ -23,11 +24,11 @@ spring:
           uri: lb://user-management-service
           predicates:
             - Path=/auth/**
-          filters:
-            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
           metadata:
             cors:
-              allowedOrigins: "http://localhost:5173"
+              allowedOrigins:
+                - "http://localhost:5173"
+                - "http://localhost:5174"
               allowedMethods:
                 - GET
                 - POST
@@ -35,6 +36,9 @@ spring:
                 - DELETE
                 - OPTIONS
               allowedHeaders: "*"
+              exposedHeaders:
+                - "Authorization"
+                - "Content-Type"
               allowCredentials: true
         - id: catalog-service
           uri: lb://design-pattern-catalog-service
@@ -44,15 +48,17 @@ spring:
           uri: lb://recommendation-engine-service
           predicates:
             - Path=/recommendations/**
-        - id: ai-service
+        - id: ai-helper-service
           uri: lb://ai-helper-service
           predicates:
-            - Path=/ai/**
+            - Path=/api/chat/**
           filters:
             - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
           metadata:
             cors:
-              allowedOrigins: "http://localhost:5173"
+              allowedOrigins:
+                - "http://localhost:5173"
+                - "http://localhost:5174"  # Add this line
               allowedMethods:
                 - GET
                 - POST
@@ -69,7 +75,9 @@ spring:
             - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
           metadata:
             cors:
-              allowedOrigins: "http://localhost:5173"
+              allowedOrigins:
+                - "http://localhost:5173"
+                - "http://localhost:5174"  # Add this line
               allowedMethods:
                 - GET
                 - POST
@@ -86,7 +94,9 @@ spring:
             - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
           metadata:
             cors:
-              allowedOrigins: "http://localhost:5173"
+              allowedOrigins:
+                - "http://localhost:5173"
+                - "http://localhost:5174"  # Add this line
               allowedMethods:
                 - GET
                 - POST
