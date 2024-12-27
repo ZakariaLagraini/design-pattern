@@ -12,7 +12,22 @@ class FileScanner:
             '.yaml': 'YAML',
             '.json': 'JSON',
             '.gradle': 'Gradle',
-            '.md': 'Markdown'
+            '.md': 'Markdown',
+            '.py': 'Python',
+            '.js': 'JavaScript',
+            '.ts': 'TypeScript',
+            '.html': 'HTML',
+            '.css': 'CSS',
+            '.scss': 'SCSS',
+            '.less': 'LESS',
+            '.sql': 'SQL',
+            '.go': 'Go',
+            '.rb': 'Ruby',
+            '.php': 'PHP',
+            '.cs': 'C#',
+            '.swift': 'Swift',
+            '.kt': 'Kotlin',
+            
         }
 
     def scan_directory(self, base_path: str) -> Dict:

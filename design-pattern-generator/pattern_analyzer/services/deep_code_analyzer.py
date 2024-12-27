@@ -20,7 +20,7 @@ class DeepCodeAnalyzer:
         
         # Initialize LangChain with Gemini
         self.llm = ChatGoogleGenerativeAI(
-            model="gemini-pro",
+            model="gemini-1.5-flash",
             temperature=0.7,
             google_api_key=os.getenv('GOOGLE_API_KEY')
         )

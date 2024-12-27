@@ -7,6 +7,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import PatternGenerator from './pages/PatternGenerator';
 import ChatBot from './components/ChatBot';
+import GenerationCatalog from './pages/GenerationCatalog';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/generator" element={<PatternGenerator />} />
+            <Route path="/catalog" element={<GenerationCatalog />} />
           </Routes>
           <ChatBot />
         </div>
