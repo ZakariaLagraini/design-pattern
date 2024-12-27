@@ -30,39 +30,43 @@ class CodeAnalysisView(views.APIView):
 
             # Get validated data
             project_path = serializer.validated_data['project_path']
-            source_dir = serializer.validated_data.get('source_dir', 'src')
             scan_type = serializer.validated_data.get('scan_type', 'full')
 
-            # Combine project path with source directory
-            full_path = os.path.join(project_path, source_dir)
+            # Log the path being analyzed
+            logger.info(f"Analyzing project at path: {project_path}")
             
             # Ensure the path exists
-            if not os.path.exists(full_path):
+            if not os.path.exists(project_path):
                 return Response({
                     'status': 'error',
-                    'message': f'Path not found: {full_path}'
+                    'message': f'Path not found: {project_path}'
                 }, status=status.HTTP_400_BAD_REQUEST)
             
             # Scan the directory first
-            scan_results = self.scanner.scan_directory(full_path)
+            logger.info("Starting directory scan...")
+            scan_results = self.scanner.scan_directory(project_path)
             
             if scan_results['status'] == 'error':
+                logger.error(f"Scan failed: {scan_results.get('message')}")
                 return Response(scan_results, status=status.HTTP_400_BAD_REQUEST)
 
+            logger.info(f"Found {len(scan_results['files'])} files to analyze")
+            
             # Add scan type to results
             scan_results['scan_type'] = scan_type
 
-            # Perform deep analysis synchronously
+            # Perform deep analysis
+            logger.info("Starting deep analysis...")
             import asyncio
             analysis_results = asyncio.run(self.analyzer.analyze(scan_results))
             
-            logger.debug("Response Data: %s", json.dumps(analysis_results, indent=2))
+            logger.info("Analysis completed successfully")
             return Response(analysis_results)
 
         except Exception as e:
+            logger.error(f"Analysis error: {str(e)}", exc_info=True)
             error_response = {
                 'status': 'error',
                 'message': str(e)
             }
-            logger.error("Analysis error: %s", str(e))
             return Response(error_response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

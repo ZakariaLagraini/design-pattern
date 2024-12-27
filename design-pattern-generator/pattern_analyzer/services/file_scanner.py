@@ -6,40 +6,18 @@ class FileScanner:
     def __init__(self):
         self.supported_extensions = {
             '.java': 'Java',
-            '.py': 'Python',
-            '.js': 'JavaScript',
-            '.ts': 'TypeScript',
-            '.cpp': 'C++',
-            '.cs': 'C#',
-            '.jsx': 'React',
-            '.tsx': 'React',
-            '.html': 'HTML',
-            '.css': 'CSS',
-            '.scss': 'CSS',
-            '.sass': 'CSS',
-            '.less': 'CSS',
-            '.styl': 'CSS',
-            '.php': 'PHP',
-            '.sql': 'SQL',
-            '.json': 'JSON',
-            '.yaml': 'YAML',
+            '.xml': 'XML',
+            '.properties': 'Properties',
             '.yml': 'YAML',
-            '.go': 'Go',
-            '.rb': 'Ruby',
-            '.swift': 'Swift',
-            '.kt': 'Kotlin',
-            '.kts': 'Kotlin',
-            '.rs': 'Rust',
-            '.dart': 'Dart',
-            '.r': 'R',
-            '.m': 'Objective-C',
-            '.mm': 'Objective-C',
-
+            '.yaml': 'YAML',
+            '.json': 'JSON',
+            '.gradle': 'Gradle',
+            '.md': 'Markdown'
         }
 
     def scan_directory(self, base_path: str) -> Dict:
         """
-        Recursively scan a directory and return all source files in a formatted way
+        Recursively scan a directory and return all source files
         """
         if not os.path.exists(base_path):
             return {
@@ -49,38 +27,50 @@ class FileScanner:
 
         try:
             files_content = {}
+            ignored_dirs = {'target', 'build', 'out', '.git', '.idea', 'node_modules'}
             
-            for root, _, files in os.walk(base_path):
+            for root, dirs, files in os.walk(base_path):
+                # Skip ignored directories
+                dirs[:] = [d for d in dirs if d not in ignored_dirs]
+                
                 for file in files:
                     file_path = os.path.join(root, file)
                     _, ext = os.path.splitext(file)
                     
                     if ext in self.supported_extensions:
-                        with open(file_path, 'r', encoding='utf-8') as f:
-                            relative_path = os.path.relpath(file_path, base_path)
-                            files_content[relative_path] = {
-                                'content': f.read(),
-                                'language': self.supported_extensions[ext],
-                                'path': relative_path
-                            }
+                        try:
+                            with open(file_path, 'r', encoding='utf-8') as f:
+                                content = f.read()
+                                if content.strip():  # Only include non-empty files
+                                    relative_path = os.path.relpath(file_path, base_path)
+                                    files_content[relative_path] = {
+                                        'content': content,
+                                        'language': self.supported_extensions[ext],
+                                        'path': relative_path,
+                                        'size': len(content)
+                                    }
+                        except Exception as e:
+                            print(f"Error reading file {file_path}: {str(e)}")
+                            continue
 
-            # Format the response in a more structured way
-            formatted_response = {
+            # Format the response
+            return {
                 'status': 'success',
                 'files': [
                     {
                         'path': file_info['path'],
                         'language': file_info['language'],
-                        'content': file_info['content'].replace('\n', '\\n').replace('\t', '\\t')
+                        'content': file_info['content'],
+                        'size': file_info['size']
                     }
                     for file_info in files_content.values()
                 ],
                 'summary': {
-                    'languages': self._count_languages(files_content)
+                    'languages': self._count_languages(files_content),
+                    'total_files': len(files_content),
+                    'file_types': self._count_file_types(files_content)
                 }
             }
-
-            return formatted_response
 
         except Exception as e:
             return {
@@ -95,3 +85,11 @@ class FileScanner:
             lang = file_info['language']
             language_count[lang] = language_count.get(lang, 0) + 1
         return language_count
+
+    def _count_file_types(self, files_content: Dict) -> Dict:
+        """Count files by extension"""
+        type_count = {}
+        for file_path in files_content.keys():
+            _, ext = os.path.splitext(file_path)
+            type_count[ext] = type_count.get(ext, 0) + 1
+        return type_count

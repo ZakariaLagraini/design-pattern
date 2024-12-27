@@ -19,13 +19,14 @@ export default function PatternGenerator() {
       input.onchange = (e) => {
         const files = Array.from(e.target.files);
         if (files.length > 0) {
-          const fullPath = files[0].webkitRelativePath.split('/')[0];
+          const selectedFolder = files[0].webkitRelativePath.split('/')[0];
+          const projectFullPath = basePath + selectedFolder;
           
-          console.log('Selected folder path:', fullPath);
+          console.log('Project path:', projectFullPath);
           
           const fileStructure = {};
           files.forEach(file => {
-            const relativePath = file.webkitRelativePath.replace(fullPath + '/', '');
+            const relativePath = file.webkitRelativePath;
             fileStructure[relativePath] = {
               name: file.name,
               path: basePath + relativePath,
@@ -34,7 +35,7 @@ export default function PatternGenerator() {
             };
           });
           
-          setProjectPath(basePath + fullPath);
+          setProjectPath(projectFullPath);
           setSelectedFiles(fileStructure);
           setError('');
         }
@@ -59,8 +60,6 @@ export default function PatternGenerator() {
 
       const payload = {
         project_path: projectPath,
-        base_path: basePath,
-        files: selectedFiles,
         scan_type: 'full'
       };
 
@@ -89,7 +88,7 @@ export default function PatternGenerator() {
   }, [analysis]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">
           Design Pattern Generator
@@ -135,29 +134,26 @@ export default function PatternGenerator() {
           )}
         </div>
 
+        {loading && <div className="text-center">Loading...</div>}
+        {error && <div className="text-red-500">{error}</div>}
+
         {analysis?.analysis?.analysis && (
           <div className="space-y-8">
             <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg overflow-hidden">
               <div className="p-6">
-                <h2 className="text-2xl font-bold text-white mb-4">
-                  Framework Detection
-                </h2>
+                <h2 className="text-2xl font-bold text-white mb-4">Framework Detection</h2>
                 <div className="bg-white rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xl font-semibold text-gray-900">
-                      {analysis.analysis.analysis.framework_detection.name}
-                    </span>
-                    <span className="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                      {analysis.analysis.analysis.framework_detection.confidence} Confidence
-                    </span>
-                  </div>
+                  <p className="text-lg font-semibold text-gray-800">
+                    Framework: {analysis.analysis.analysis.framework_detection.name}
+                  </p>
+                  <p className="text-md text-gray-600">
+                    Confidence: {analysis.analysis.analysis.framework_detection.confidence}
+                  </p>
                   <div className="mt-4">
-                    <h3 className="text-sm font-medium text-gray-900">Key Files:</h3>
-                    <ul className="mt-2 divide-y divide-gray-200">
-                      {analysis.analysis.analysis.framework_detection.key_files.map((file, index) => (
-                        <li key={index} className="py-2 text-sm text-gray-600">
-                          {file}
-                        </li>
+                    <h3 className="font-semibold text-gray-700">Key Files:</h3>
+                    <ul className="list-disc pl-5">
+                      {analysis.analysis.analysis.framework_detection.key_files?.map((file, index) => (
+                        <li key={index} className="py-2 text-sm text-gray-600">{file}</li>
                       ))}
                     </ul>
                   </div>
@@ -167,14 +163,12 @@ export default function PatternGenerator() {
 
             <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg shadow-lg overflow-hidden">
               <div className="p-6">
-                <h2 className="text-2xl font-bold text-white mb-4">
-                  Code Structure Analysis
-                </h2>
-                <div className="space-y-4">
-                  <div className="bg-white rounded-lg p-4">
-                    <h3 className="text-lg font-medium text-gray-900 mb-3">Main Components</h3>
+                <h2 className="text-2xl font-bold text-white mb-4">Code Structure Analysis</h2>
+                <div className="bg-white rounded-lg p-4">
+                  <div className="mb-4">
+                    <h3 className="font-semibold text-gray-700 mb-2">Main Components:</h3>
                     <ul className="space-y-2">
-                      {analysis.analysis.analysis.code_structure.main_components.map((component, index) => (
+                      {analysis.analysis.analysis.code_structure.main_components?.map((component, index) => (
                         <li key={index} className="text-sm text-gray-600 flex items-start">
                           <svg className="w-5 h-5 text-purple-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -184,10 +178,10 @@ export default function PatternGenerator() {
                       ))}
                     </ul>
                   </div>
-                  <div className="bg-white rounded-lg p-4">
-                    <h3 className="text-lg font-medium text-gray-900 mb-3">Areas for Improvement</h3>
+                  <div>
+                    <h3 className="font-semibold text-gray-700 mb-2">Weaknesses:</h3>
                     <ul className="space-y-2">
-                      {analysis.analysis.analysis.code_structure.weaknesses.map((weakness, index) => (
+                      {analysis.analysis.analysis.code_structure.weaknesses?.map((weakness, index) => (
                         <li key={index} className="text-sm text-gray-600 flex items-start">
                           <svg className="w-5 h-5 text-yellow-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -203,45 +197,37 @@ export default function PatternGenerator() {
 
             <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-lg overflow-hidden">
               <div className="p-6">
-                <h2 className="text-2xl font-bold text-white mb-4">
-                  Suggested Design Patterns
-                </h2>
+                <h2 className="text-2xl font-bold text-white mb-4">Suggested Design Patterns</h2>
                 <div className="space-y-4">
-                  {analysis.analysis.analysis.suggested_patterns.map((pattern, index) => (
+                  {analysis.analysis.analysis.suggested_design_patterns?.map((pattern, index) => (
                     <div key={index} className="bg-white rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-semibold text-gray-900">{pattern.name}</h3>
-                        <div className="flex space-x-2">
-                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            {pattern.type}
-                          </span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            pattern.priority === 'High' ? 'bg-red-100 text-red-800' :
-                            pattern.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-green-100 text-green-800'
-                          }`}>
-                            {pattern.priority} Priority
-                          </span>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-800">{pattern.name}</h3>
+                          <p className="text-sm text-gray-600">Type: {pattern.type}</p>
                         </div>
-                      </div>
-                      <p className="text-sm text-gray-600 mb-3">{pattern.implementation.description}</p>
-                      <div className="bg-gray-50 rounded-md p-4">
-                        <pre className="text-sm text-gray-800 overflow-x-auto">
-                          <code>{pattern.implementation.example}</code>
-                        </pre>
+                        <span className={`px-3 py-1 rounded-full text-sm ${
+                          pattern.priority === 'High' ? 'bg-red-100 text-red-800' :
+                          pattern.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-green-100 text-green-800'
+                        }`}>
+                          {pattern.priority} Priority
+                        </span>
                       </div>
                       <div className="mt-3">
-                        <h4 className="text-sm font-medium text-gray-900">Target Files:</h4>
-                        <ul className="mt-1 space-y-1">
-                          {pattern.target_files.map((file, fileIndex) => (
-                            <li key={fileIndex} className="text-sm text-gray-600 flex items-center">
-                              <svg className="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                              </svg>
-                              {file}
-                            </li>
+                        <p className="text-sm font-semibold text-gray-700">Target Files:</p>
+                        <ul className="list-disc pl-5">
+                          {pattern.target_files?.map((file, fileIndex) => (
+                            <li key={fileIndex} className="text-sm text-gray-600">{file}</li>
                           ))}
                         </ul>
+                      </div>
+                      <div className="mt-3">
+                        <p className="text-sm font-semibold text-gray-700">Implementation:</p>
+                        <p className="text-sm text-gray-600 mt-1">{pattern.implementation.description}</p>
+                        <pre className="mt-2 p-3 bg-gray-100 rounded-lg text-sm overflow-x-auto">
+                          <code>{pattern.implementation.example}</code>
+                        </pre>
                       </div>
                     </div>
                   ))}
