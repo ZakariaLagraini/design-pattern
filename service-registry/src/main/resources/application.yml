@@ -11,3 +11,33 @@ server:
 spring:
   application:
     name: service-registry
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  tracing:
+    sampling:
+      probability: 1.0
+    propagation:
+      type: w3c
+    baggage:
+      remote-fields: "x-request-id"
+      correlation:
+        fields: "x-request-id"
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  zipkin:
+    tracing:
+      endpoint: http://zipkin:9411/api/v2/spans
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"

@@ -3,7 +3,7 @@ spring:
     gateway:
       globalcors:
         corsConfigurations:
-          '[/**]':
+          '[/]':
             allowedOrigins:
               - "http://localhost:5173"
             allowedMethods:
@@ -48,3 +48,59 @@ spring:
           uri: lb://ai-helper-service
           predicates:
             - Path=/ai/**
+        - id: design-pattern-generator
+          uri: lb://design-pattern-generator
+          predicates:
+            - Path=/api/analyze/**
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+          metadata:
+            cors:
+              allowedOrigins: 'http://localhost:5173'
+              allowedMethods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - OPTIONS
+              allowedHeaders: '*'
+              allowCredentials: true
+        - id: pattern-analyzer
+          uri: lb://design-pattern-generator
+          predicates:
+            - Path=/api/analyze/**
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+          metadata:
+            cors:
+              allowedOrigins: 'http://localhost:5173'
+              allowedMethods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - OPTIONS
+              allowedHeaders: '*'
+              allowCredentials: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  tracing:
+    sampling:
+      probability: 1.0
+    zipkin:
+      base-url: http://zipkin:9411
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
