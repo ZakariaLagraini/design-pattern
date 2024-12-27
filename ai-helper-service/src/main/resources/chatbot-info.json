@@ -1,0 +1,102 @@
+{
+  "chatbot_details": {
+    "name": "AI Customer Service Bot",
+    "version": "1.0",
+    "company": {
+      "creators": [
+        "Morad El Maslouhy",
+        "Hamza El Alaoui",
+        "Reda Jord",
+        "Zakaria Lagraini",
+        "Khalil Azarou"
+      ],
+      "school": "EMSI School for Engineering",
+      "location": "Morocco",
+      "year": "2024"
+    },
+    "application_workflow": {
+      "steps": [
+        {
+          "step": 1,
+          "name": "Authentication",
+          "description": "Users must first log in to their account or register if they're new",
+          "options": [
+            "Login with existing account",
+            "Register new account with email"
+          ]
+        },
+        {
+          "step": 2,
+          "name": "Project Upload",
+          "description": "Upload your project files or codebase",
+          "supported_formats": [
+            ".java",
+            ".py",
+            ".js",
+            ".cpp",
+            "Other programming languages"
+          ]
+        },
+        {
+          "step": 3,
+          "name": "Pattern Generation",
+          "description": "Click the 'Generate' button to analyze your code and receive design pattern recommendations",
+          "features": [
+            "Automatic code analysis",
+            "Pattern identification",
+            "Best practices suggestions",
+            "Code structure optimization"
+          ]
+        },
+        {
+          "step": 4,
+          "name": "Results & Storage",
+          "description": "View and save your generated design patterns",
+          "features": [
+            "Save patterns to your account",
+            "Access pattern history",
+            "Download pattern documentation",
+            "Share patterns with team members"
+          ]
+        }
+      ],
+      "key_features": {
+        "history_tracking": {
+          "description": "Access all your previously generated patterns",
+          "features": [
+            "View past generations",
+            "Compare different versions",
+            "Track changes over time"
+          ]
+        },
+        "code_guidance": {
+          "description": "Get detailed guidance for implementing patterns",
+          "features": [
+            "Step-by-step implementation guides",
+            "Code examples",
+            "Best practices",
+            "Common pitfalls to avoid"
+          ]
+        }
+      }
+    },
+    "capabilities": {
+      "features": [
+        "Customer support",
+        "Product information",
+        "Technical assistance",
+        "FAQ responses",
+        "Real-time help"
+      ],
+      "languages": ["English", "French", "Arabic"],
+      "available_hours": "24/7"
+    },
+    "description": "An advanced AI-powered customer service chatbot designed to provide immediate, accurate, and helpful responses to user inquiries. Built by EMSI engineering students to revolutionize customer service interactions.",
+    "technical_details": {
+      "powered_by": "Google Gemini AI",
+      "framework": "Spring Boot",
+      "architecture": "Microservices",
+      "deployment": "Cloud-native"
+    }
+  }
+}
