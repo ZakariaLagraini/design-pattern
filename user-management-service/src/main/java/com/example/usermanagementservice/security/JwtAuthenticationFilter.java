@@ -25,10 +25,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = header.substring(7);
             if (jwtTokenProvider.validateToken(token)) {
                 String username = jwtTokenProvider.getUsernameFromToken(token);
+                Long userId = jwtTokenProvider.getIdFromToken(token); // Extraire l'ID utilisateur
+
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         username, null, null);
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                // Optionnel : Vous pouvez stocker l'ID utilisateur dans un contexte personnalisé
+                request.setAttribute("userId", userId);
             }
         }
         try {
@@ -37,4 +42,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throw new RuntimeException(e);
         }
     }
+
 }
