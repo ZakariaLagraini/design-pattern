@@ -178,7 +178,8 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080",  # API Gateway URL
+    "http://localhost:8080",
+     "http://localhost:5173",# API Gateway URL
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -187,3 +188,14 @@ CORS_ALLOW_CREDENTIALS = True
 SPRING_APPLICATION_NAME = APP_NAME
 EUREKA_CLIENT_SERVICEURL_DEFAULTZONE = EUREKA_SERVER_URL
 SERVER_PORT = SERVER_PORT
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
