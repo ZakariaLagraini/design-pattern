@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   service-registry:
     build:
@@ -8,66 +7,94 @@ services:
       - "8761:8761"
     networks:
       - app-network
+    depends_on:
+      - postgres-user
+      - postgres-catalog
+    volumes:
+      - ./wait-for-it.sh:/wait-for-it.sh
+    command: ["sh", "-c", "chmod +x /wait-for-it.sh && /wait-for-it.sh postgres-user 5432 /wait-for-it.sh postgres-catalog 5432 java -jar app.jar"]
+
   user-management-service:
     build:
       context: ./user-management-service
       dockerfile: Dockerfile
     ports:
       - "8081:8081"
-    depends_on:
-      - service-registry
     networks:
       - app-network
-  design-pattern-catalog-service:
-    build:
-      context: ./design-pattern-catalog-service
-      dockerfile: Dockerfile
-    ports:
-      - "8082:8082"
     depends_on:
       - service-registry
-    networks:
-      - app-network
+    volumes:
+      - ./wait-for-it.sh:/wait-for-it.sh
+    command: ["sh", "-c", "chmod +x /wait-for-it.sh && /wait-for-it.sh service-registry 8761 java -jar app.jar"]
+
   recommendation-engine-service:
     build:
       context: ./recommendation-engine-service
       dockerfile: Dockerfile
     ports:
       - "8083:8083"
-    depends_on:
-      - service-registry
     networks:
       - app-network
+    depends_on:
+      - user-management-service
+    volumes:
+      - ./wait-for-it.sh:/wait-for-it.sh
+    command: ["sh", "-c", "chmod +x /wait-for-it.sh && /wait-for-it.sh user-management-service 8081 java -jar app.jar"]
+
   ai-helper-service:
     build:
       context: ./ai-helper-service
       dockerfile: Dockerfile
     ports:
       - "8084:8084"
-    depends_on:
-      - service-registry
     networks:
       - app-network
+    depends_on:
+      - recommendation-engine-service
+    volumes:
+      - ./wait-for-it.sh:/wait-for-it.sh
+    command: ["sh", "-c", "chmod +x /wait-for-it.sh && /wait-for-it.sh recommendation-engine-service 8083 java -jar app.jar"]
+
+  design-pattern-catalog-service:
+    build:
+      context: ./design-pattern-catalog-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    networks:
+      - app-network
+    depends_on:
+      - ai-helper-service
+    volumes:
+      - ./wait-for-it.sh:/wait-for-it.sh
+    command: ["sh", "-c", "chmod +x /wait-for-it.sh && /wait-for-it.sh ai-helper-service 8084 java -jar app.jar"]
+
   api-gateway:
     build:
       context: ./api-gateway
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
-    depends_on:
-      - service-registry
     networks:
       - app-network
+    depends_on:
+      - design-pattern-catalog-service
+    volumes:
+      - ./wait-for-it.sh:/wait-for-it.sh
+    command: ["sh", "-c", "chmod +x /wait-for-it.sh && /wait-for-it.sh design-pattern-catalog-service 8082 java -jar app.jar"]
+
   postgres-user:
     image: postgres:latest
     ports:
-      - "5432:5432"
+      - "5434:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: user_db
     networks:
       - app-network
+
   postgres-catalog:
     image: postgres:latest
     ports:

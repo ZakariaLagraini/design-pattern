@@ -1,94 +1,92 @@
-import { useState } from 'react';
-import { useDropzone } from 'react-dropzone';
-import { 
-  DocumentIcon, 
-  CodeBracketIcon, 
-  ClipboardIcon, 
-  ArrowDownTrayIcon,
-  EyeIcon
-} from '@heroicons/react/24/outline';
+import { useState, useEffect } from 'react';
+import axiosInstance from '../utils/axios';
 
 export default function PatternGenerator() {
-  const [code, setCode] = useState('');
-  const [patterns, setPatterns] = useState(null);
-  const [activeTab, setActiveTab] = useState('upload');
-  const [showPreview, setShowPreview] = useState(false);
+  const [basePath, setBasePath] = useState('C:/Users/pc/Desktop/project/design-pattern/');
+  const [projectPath, setProjectPath] = useState('');
+  const [analysis, setAnalysis] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState(null);
 
-  const onDrop = async (acceptedFiles) => {
-    const file = acceptedFiles[0];
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setCode(e.target.result);
-    };
-    reader.readAsText(file);
-  };
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
-    onDrop,
-    accept: {
-      'text/plain': ['.txt', '.js', '.jsx', '.ts', '.tsx', '.java', '.py', '.cpp', '.c', '.cs'],
+  const handleFolderPick = async () => {
+    try {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.webkitdirectory = true;
+      input.directory = true;
+      
+      input.onchange = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length > 0) {
+          const fullPath = files[0].webkitRelativePath.split('/')[0];
+          
+          console.log('Selected folder path:', fullPath);
+          
+          const fileStructure = {};
+          files.forEach(file => {
+            const relativePath = file.webkitRelativePath.replace(fullPath + '/', '');
+            fileStructure[relativePath] = {
+              name: file.name,
+              path: basePath + relativePath,
+              size: file.size,
+              type: file.type
+            };
+          });
+          
+          setProjectPath(basePath + fullPath);
+          setSelectedFiles(fileStructure);
+          setError('');
+        }
+      };
+      
+      input.click();
+    } catch (err) {
+      console.error('Error selecting folder:', err);
+      setError('Failed to select folder: ' + err.message);
     }
-  });
+  };
 
-  const handleAnalyze = () => {
-    setShowPreview(false);
-    // Simulate pattern analysis
-    setPatterns([
-      { 
-        name: 'Singleton Pattern',
-        confidence: 90,
-        implementation: `class Singleton {
-  private static instance: Singleton;
-  
-  private constructor() {}
-  
-  public static getInstance(): Singleton {
-    if (!Singleton.instance) {
-      Singleton.instance = new Singleton();
+  const handleAnalyze = async () => {
+    try {
+      setLoading(true);
+      setError('');
+
+      if (!selectedFiles) {
+        setError('Please select a project folder first');
+        return;
+      }
+
+      const payload = {
+        project_path: projectPath,
+        base_path: basePath,
+        files: selectedFiles,
+        scan_type: 'full'
+      };
+
+      console.log('Sending payload:', payload);
+
+      const response = await axiosInstance.post('/analyze/', payload);
+      console.log('Received response:', response.data);
+
+      if (response.data && response.data.status === 'success') {
+        setAnalysis(response.data);
+      } else {
+        setError('No analysis data received from server');
+      }
+    } catch (err) {
+      console.error('Analysis error:', err);
+      setError(err.response?.data?.message || 'Failed to analyze project');
+    } finally {
+      setLoading(false);
     }
-    return Singleton.instance;
-  }
-}`,
-        description: 'Ensures a class has only one instance and provides a global point of access to it.'
-      },
-      { 
-        name: 'Factory Pattern',
-        confidence: 85,
-        implementation: `interface Product {}
+  };
 
-class ConcreteProductA implements Product {}
-class ConcreteProductB implements Product {}
-
-class Factory {
-  createProduct(type: string): Product {
-    switch(type) {
-      case 'A':
-        return new ConcreteProductA();
-      case 'B':
-        return new ConcreteProductB();
-      default:
-        throw new Error('Invalid product type');
+  useEffect(() => {
+    if (analysis) {
+      console.log('Analysis data:', analysis);
     }
-  }
-}`,
-        description: 'Creates objects without exposing the instantiation logic to the client.'
-      },
-    ]);
-  };
-
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-  };
-
-  const downloadCode = (code, filename) => {
-    const blob = new Blob([code], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
+  }, [analysis]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -97,156 +95,161 @@ class Factory {
           Design Pattern Generator
         </h1>
 
-        {/* Tab Navigation */}
-        <div className="border-b border-gray-200 mb-8">
-          <nav className="-mb-px flex space-x-8">
+        <div className="bg-white rounded-lg shadow p-6 mb-8">
+          <div className="mb-4">
+            <label htmlFor="basePath" className="block text-sm font-medium text-gray-700 mb-2">
+              Base Project Path
+            </label>
+            <input
+              type="text"
+              id="basePath"
+              value={basePath}
+              onChange={(e) => setBasePath(e.target.value)}
+              className="input-field w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+            />
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4">
             <button
-              onClick={() => setActiveTab('upload')}
-              className={`${
-                activeTab === 'upload'
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } flex items-center whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm`}
+              onClick={handleFolderPick}
+              className="btn-primary flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              disabled={loading}
             >
-              <DocumentIcon className="h-5 w-5 mr-2" />
-              Upload Files
+              Select Project Folder
             </button>
-            <button
-              onClick={() => setActiveTab('paste')}
-              className={`${
-                activeTab === 'paste'
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } flex items-center whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm`}
-            >
-              <CodeBracketIcon className="h-5 w-5 mr-2" />
-              Paste Code
-            </button>
-          </nav>
+            {selectedFiles && (
+              <button
+                onClick={handleAnalyze}
+                className="btn-primary flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                disabled={loading}
+              >
+                {loading ? 'Analyzing...' : 'Generate Patterns'}
+              </button>
+            )}
+          </div>
+
+          {projectPath && (
+            <p className="mt-4 text-sm text-gray-600">
+              Selected project: {projectPath}
+            </p>
+          )}
         </div>
 
-        {/* Content Area */}
-        <div className="space-y-6">
-          {activeTab === 'upload' ? (
-            <>
-              <div {...getRootProps()} className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer
-                transition-colors duration-200 ease-in-out
-                ${isDragActive ? 'border-primary-500 bg-primary-50' : 'border-gray-300 hover:border-primary-400'}`}>
-                <input {...getInputProps()} />
-                <DocumentIcon className="mx-auto h-12 w-12 text-gray-400" />
-                <p className="mt-2 text-sm font-medium text-gray-900">
-                  Drop your code files here, or click to browse
-                </p>
-                <p className="mt-1 text-xs text-gray-500">
-                  Supports: .js, .jsx, .ts, .tsx, .java, .py, .cpp, .c, .cs
-                </p>
-              </div>
-              {code && (
-                <div className="flex justify-between items-center">
-                  <button
-                    onClick={() => setShowPreview(true)}
-                    className="inline-flex items-center px-4 py-2 text-sm text-primary-600 hover:text-primary-700"
-                  >
-                    <EyeIcon className="h-5 w-5 mr-2" />
-                    Preview Code
-                  </button>
-                  <button
-                    onClick={handleAnalyze}
-                    className="btn-primary"
-                  >
-                    Generate Patterns
-                  </button>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="space-y-4">
-              <div className="rounded-lg border border-gray-300 shadow-sm">
-                <textarea
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  placeholder="Paste your code here..."
-                  rows={15}
-                  className="block w-full rounded-lg border-0 py-4 px-4 text-gray-900 font-mono text-sm
-                    placeholder:text-gray-400 focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-              {code && (
-                <div className="flex justify-end">
-                  <button
-                    onClick={handleAnalyze}
-                    className="btn-primary"
-                  >
-                    Generate Patterns
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Code Preview */}
-          {showPreview && code && (
-            <div className="mt-8 space-y-4">
-              <h2 className="text-xl font-semibold text-gray-900">Code Preview</h2>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <pre className="overflow-x-auto font-mono text-sm">
-                  {code}
-                </pre>
-              </div>
-            </div>
-          )}
-
-          {/* Results Section */}
-          {patterns && (
-            <div className="mt-8 space-y-6">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Suggested Design Patterns
-              </h2>
-              <div className="bg-white rounded-lg shadow divide-y divide-gray-200">
-                {patterns.map((pattern, index) => (
-                  <div key={index} className="p-6 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-medium text-gray-900">
-                        {pattern.name}
-                      </h3>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                        ${pattern.confidence >= 90 
-                          ? 'bg-green-100 text-green-800'
-                          : pattern.confidence >= 80
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                        {pattern.confidence}% Match
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600">{pattern.description}</p>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <div className="flex justify-end space-x-4 mb-2">
-                        <button
-                          onClick={() => copyToClipboard(pattern.implementation)}
-                          className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
-                        >
-                          <ClipboardIcon className="h-4 w-4 mr-1" />
-                          Copy
-                        </button>
-                        <button
-                          onClick={() => downloadCode(pattern.implementation, `${pattern.name.toLowerCase().replace(' ', '_')}.ts`)}
-                          className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
-                        >
-                          <ArrowDownTrayIcon className="h-4 w-4 mr-1" />
-                          Download
-                        </button>
-                      </div>
-                      <pre className="overflow-x-auto font-mono text-sm">
-                        {pattern.implementation}
-                      </pre>
-                    </div>
+        {analysis?.analysis?.analysis && (
+          <div className="space-y-8">
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg overflow-hidden">
+              <div className="p-6">
+                <h2 className="text-2xl font-bold text-white mb-4">
+                  Framework Detection
+                </h2>
+                <div className="bg-white rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xl font-semibold text-gray-900">
+                      {analysis.analysis.analysis.framework_detection.name}
+                    </span>
+                    <span className="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                      {analysis.analysis.analysis.framework_detection.confidence} Confidence
+                    </span>
                   </div>
-                ))}
+                  <div className="mt-4">
+                    <h3 className="text-sm font-medium text-gray-900">Key Files:</h3>
+                    <ul className="mt-2 divide-y divide-gray-200">
+                      {analysis.analysis.analysis.framework_detection.key_files.map((file, index) => (
+                        <li key={index} className="py-2 text-sm text-gray-600">
+                          {file}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               </div>
             </div>
-          )}
-        </div>
+
+            <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg shadow-lg overflow-hidden">
+              <div className="p-6">
+                <h2 className="text-2xl font-bold text-white mb-4">
+                  Code Structure Analysis
+                </h2>
+                <div className="space-y-4">
+                  <div className="bg-white rounded-lg p-4">
+                    <h3 className="text-lg font-medium text-gray-900 mb-3">Main Components</h3>
+                    <ul className="space-y-2">
+                      {analysis.analysis.analysis.code_structure.main_components.map((component, index) => (
+                        <li key={index} className="text-sm text-gray-600 flex items-start">
+                          <svg className="w-5 h-5 text-purple-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          {component}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="bg-white rounded-lg p-4">
+                    <h3 className="text-lg font-medium text-gray-900 mb-3">Areas for Improvement</h3>
+                    <ul className="space-y-2">
+                      {analysis.analysis.analysis.code_structure.weaknesses.map((weakness, index) => (
+                        <li key={index} className="text-sm text-gray-600 flex items-start">
+                          <svg className="w-5 h-5 text-yellow-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                          {weakness}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-lg overflow-hidden">
+              <div className="p-6">
+                <h2 className="text-2xl font-bold text-white mb-4">
+                  Suggested Design Patterns
+                </h2>
+                <div className="space-y-4">
+                  {analysis.analysis.analysis.suggested_patterns.map((pattern, index) => (
+                    <div key={index} className="bg-white rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-lg font-semibold text-gray-900">{pattern.name}</h3>
+                        <div className="flex space-x-2">
+                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {pattern.type}
+                          </span>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            pattern.priority === 'High' ? 'bg-red-100 text-red-800' :
+                            pattern.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-green-100 text-green-800'
+                          }`}>
+                            {pattern.priority} Priority
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-3">{pattern.implementation.description}</p>
+                      <div className="bg-gray-50 rounded-md p-4">
+                        <pre className="text-sm text-gray-800 overflow-x-auto">
+                          <code>{pattern.implementation.example}</code>
+                        </pre>
+                      </div>
+                      <div className="mt-3">
+                        <h4 className="text-sm font-medium text-gray-900">Target Files:</h4>
+                        <ul className="mt-1 space-y-1">
+                          {pattern.target_files.map((file, fileIndex) => (
+                            <li key={fileIndex} className="text-sm text-gray-600 flex items-center">
+                              <svg className="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                              </svg>
+                              {file}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

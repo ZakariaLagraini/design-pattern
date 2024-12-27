@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'spring-boot-apps'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets:
+        - 'user-management-service:8080'
+        - 'design-pattern-catalog-service:8081'
+        - 'recommendation-engine-service:8082'
+        - 'ai-helper-service:8083'
+        - 'api-gateway:8084'
