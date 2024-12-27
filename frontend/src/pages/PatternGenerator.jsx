@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import axiosInstance from '../utils/axios';
-import { FolderIcon } from '@heroicons/react/24/outline';
+
+const BASE_PATH = 'C:/Users/pc/Desktop/project/design-pattern/';
 
 export default function PatternGenerator() {
   const [projectPath, setProjectPath] = useState('');
@@ -19,13 +20,26 @@ export default function PatternGenerator() {
       input.onchange = (e) => {
         const files = Array.from(e.target.files);
         if (files.length > 0) {
-          // Construct the full path
-          const fullPath = `C:/Users/pc/Desktop/lchgar-micro/design-pattern/${files[0].webkitRelativePath.split('/')[0]}`;
-          const normalizedPath = fullPath.replace(/\\/g, '/');
-          console.log('Selected folder path:', normalizedPath);
+          const fullPath = files[0].webkitRelativePath.split('/')[0];
           
-          setProjectPath(normalizedPath);
-          setSelectedFiles(files);
+          // Remove path validation since we can't actually check the full system path
+          // due to browser security restrictions
+          console.log('Selected folder path:', fullPath);
+          
+          // Create file structure object
+          const fileStructure = {};
+          files.forEach(file => {
+            const relativePath = file.webkitRelativePath.replace(fullPath + '/', '');
+            fileStructure[relativePath] = {
+              name: file.name,
+              path: BASE_PATH + relativePath,
+              size: file.size,
+              type: file.type
+            };
+          });
+          
+          setProjectPath(BASE_PATH + fullPath);
+          setSelectedFiles(fileStructure);
           setError('');
         }
       };
@@ -41,24 +55,20 @@ export default function PatternGenerator() {
     try {
       setLoading(true);
       setError('');
-      
-      if (!projectPath) {
-        setError('Please select a folder first');
+
+      if (!selectedFiles) {
+        setError('Please select a project folder first');
         return;
       }
 
-      // Ensure path ends with forward slash
-      const normalizedPath = projectPath.endsWith('/') 
-        ? projectPath 
-        : `${projectPath}/`;
-      
       const payload = {
-        project_path: normalizedPath,
-        source_dir: "src",
-        scan_type: "full"
+        project_path: projectPath,
+        base_path: BASE_PATH,
+        files: selectedFiles,
+        scan_type: 'full'
       };
 
-      console.log('Sending request with payload:', payload);
+      console.log('Sending analysis request:', payload);
 
       const response = await axiosInstance.post('/analyze/', payload);
 
@@ -71,7 +81,6 @@ export default function PatternGenerator() {
     } catch (err) {
       console.error('Full error:', err);
       if (err.response?.data) {
-        console.log('Error response:', err.response.data);
         setError(err.response.data.message || 'Failed to analyze project');
       } else {
         setError('Failed to connect to the analysis server');
@@ -83,68 +92,75 @@ export default function PatternGenerator() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-3xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">
-          Design Pattern Generator
+          Pattern Generator
         </h1>
 
-        <div className="mb-8">
-          <div className="flex gap-4">
-            <div className="flex-1 relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FolderIcon className="h-5 w-5 text-gray-400" />
+        <div className="space-y-6">
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+            <div className="flex">
+              <div className="ml-3">
+                <p className="text-sm text-yellow-700">
+                  Please create your project in this directory:
+                  <br />
+                  <code className="text-xs bg-yellow-100 px-2 py-1 rounded">
+                    {BASE_PATH}
+                  </code>
+                </p>
               </div>
-              <input
-                type="text"
-                value={projectPath}
-                readOnly
-                placeholder="Select your project folder..."
-                className="block w-full rounded-lg border-gray-300 pl-10 focus:ring-primary-500 focus:border-primary-500"
-              />
-              <button
-                onClick={handleFolderPick}
-                type="button"
-                className="absolute inset-y-0 right-0 px-3 flex items-center bg-gray-50 hover:bg-gray-100 rounded-r-lg border-l border-gray-300"
-              >
-                Browse
-              </button>
             </div>
-            <button
-              onClick={handleAnalyze}
-              disabled={loading || !projectPath}
-              className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed min-w-[150px]"
-            >
-              {loading ? (
-                <div className="flex items-center justify-center">
-                  <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  Analyzing...
-                </div>
-              ) : (
-                'Generate Patterns'
-              )}
-            </button>
           </div>
-          {error && (
-            <p className="mt-2 text-sm text-red-600">{error}</p>
-          )}
-          <p className="mt-2 text-sm text-gray-500">
-            Select the root folder of your project containing the 'src' directory
-          </p>
-        </div>
 
-        {analysis && (
-          <div className="space-y-8">
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Analysis Results</h2>
+          <div>
+            <button
+              onClick={handleFolderPick}
+              className="btn-primary"
+              disabled={loading}
+            >
+              Select Project Folder
+            </button>
+            {projectPath && (
+              <p className="mt-2 text-sm text-gray-600">
+                Selected folder: {projectPath}
+              </p>
+            )}
+            {selectedFiles && (
+              <div className="mt-4">
+                <p className="text-sm text-gray-600">
+                  {Object.keys(selectedFiles).length} files selected
+                </p>
+                <button
+                  onClick={handleAnalyze}
+                  className="btn-primary mt-2"
+                  disabled={loading}
+                >
+                  {loading ? 'Analyzing...' : 'Generate Patterns'}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {error && (
+            <div className="rounded-md bg-red-50 p-4">
+              <div className="flex">
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800">Error</h3>
+                  <div className="mt-2 text-sm text-red-700">{error}</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {analysis && (
+            <div className="mt-8">
+              <h2 className="text-xl font-semibold mb-4">Analysis Results</h2>
               <pre className="bg-gray-50 p-4 rounded-lg overflow-auto">
                 {JSON.stringify(analysis, null, 2)}
               </pre>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
