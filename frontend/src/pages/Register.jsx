@@ -10,13 +10,16 @@ export default function Register() {
     confirmPassword: '',
   });
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
+    
     try {
-      // Simple validation
       if (!userData.email || !userData.password) {
         setError('Please fill in all fields');
         return;
@@ -29,10 +32,18 @@ export default function Register() {
         setError('Password must be at least 6 characters');
         return;
       }
+
       await register(userData);
-      navigate('/dashboard');
+      setSuccess('Inscription réussie ! Veuillez vous connecter.');
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
     } catch (err) {
-      setError(err.message || 'Registration failed');
+      if (err.response?.status === 409) {
+        setError('Un compte existe déjà avec cette adresse email. Veuillez vous connecter ou utiliser une autre adresse.');
+      } else {
+        setError(err.response?.data?.message || 'Une erreur est survenue lors de l\'inscription.');
+      }
     }
   };
 
@@ -55,6 +66,12 @@ export default function Register() {
             <div className="rounded-lg bg-red-50 p-4 text-sm text-red-700">
               <p className="font-medium">Registration Error</p>
               <p>{error}</p>
+            </div>
+          )}
+          {success && (
+            <div className="rounded-lg bg-green-50 p-4 text-sm text-green-700">
+              <p className="font-medium">Succès</p>
+              <p>{success}</p>
             </div>
           )}
           <div className="space-y-4">
@@ -125,4 +142,4 @@ export default function Register() {
       </div>
     </div>
   );
-} 
+}

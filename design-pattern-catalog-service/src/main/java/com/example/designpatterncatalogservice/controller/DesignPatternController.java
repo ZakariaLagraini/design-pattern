@@ -1,41 +1,43 @@
 package com.example.designpatterncatalogservice.controller;
 
 import com.example.designpatterncatalogservice.entity.DesignPattern;
-import com.example.designpatterncatalogservice.repository.DesignPatternRepository;
+import com.example.designpatterncatalogservice.service.DesignPatternService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/patterns")
+@RequestMapping("/design_patterns")
 public class DesignPatternController {
 
-    private final DesignPatternRepository patternRepository;
-
     @Autowired
-    public DesignPatternController(DesignPatternRepository patternRepository) {
-        this.patternRepository = patternRepository;
-    }
+    private DesignPatternService service;
 
-    @GetMapping
-    public ResponseEntity<List<DesignPattern>> getAllPatterns(){
-        return ResponseEntity.ok(patternRepository.findAll());
-    }
-
-
+    // Endpoint POST pour créer un DesignPattern
     @PostMapping
-    public ResponseEntity<DesignPattern> addPattern(@RequestBody DesignPattern pattern) {
-        DesignPattern savedPattern = patternRepository.save(pattern);
-        return ResponseEntity.ok(savedPattern);
+    public ResponseEntity<DesignPattern> createDesignPattern(@RequestBody DesignPattern designPattern) {
+        DesignPattern savedDesignPattern = service.saveDesignPattern(designPattern.getUserId(), designPattern.getTexte());
+        return ResponseEntity.ok(savedDesignPattern);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<DesignPattern> getPatternById(@PathVariable Long id){
-        Optional<DesignPattern> pattern = patternRepository.findById(id);
-        return pattern.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
-    }
+    // Endpoint GET pour récupérer les textes des DesignPatterns par userId
+    @GetMapping
+    public ResponseEntity<List<String>> getDesignPatternTextsByUserId(@RequestParam Long userId) {
+        List<DesignPattern> designPatterns = service.findDesignPatternsByUserId(userId);
 
+        // Vérifie si aucun résultat n'est trouvé
+        if (designPatterns.isEmpty()) {
+            return ResponseEntity.noContent().build(); // 204 No Content
+        }
+
+        // Extrait uniquement les textes des DesignPatterns
+        List<String> texts = designPatterns.stream()
+                .map(DesignPattern::getTexte)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(texts);
+    }
 }
