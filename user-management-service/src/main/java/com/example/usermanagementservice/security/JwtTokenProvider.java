@@ -17,9 +17,10 @@ public class JwtTokenProvider {
     private final long EXPIRATION_TIME = 86400000L;
 
 
-    public String generateToken(String username) {
+    public String generateToken(String username , Long id) {
         return Jwts.builder()
-                .setSubject(username)                          // Set the subject
+                .setSubject(username)
+                .claim("id", id) // Set the subject
                 .setIssuedAt(new Date())                       // Set the issued time
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME)) // Set the expiration time
                 .signWith(SECRET_KEY, SignatureAlgorithm.HS256) // Sign the token
@@ -34,6 +35,14 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+    }
+    public Long getIdFromToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(SECRET_KEY)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("id", Long.class); // Extraire l'ID
     }
 
     public boolean validateToken(String token) {

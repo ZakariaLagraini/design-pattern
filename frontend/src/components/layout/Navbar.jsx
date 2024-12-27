@@ -47,7 +47,9 @@ export default function Navbar() {
                     <Menu.Button className="flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
                       <span className="sr-only">Open user menu</span>
                       <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
-                        <span className="text-primary-800">{user.email[0].toUpperCase()}</span>
+                        <span className="text-primary-800">
+                          {user && user.email ? user.email[0].toUpperCase() : 'U'}
+                        </span>
                       </div>
                     </Menu.Button>
                     <Transition

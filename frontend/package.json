@@ -15,7 +15,7 @@
     "@tailwindcss/forms": "^0.5.7",
     "autoprefixer": "^10.4.16",
     "axios": "^1.7.9",
-    "googleapis": "^144.0.0",
+    "cors": "^2.8.5",
     "path-browserify": "^1.0.1",
     "postcss": "^8.4.31",
     "react": "^18.2.0",

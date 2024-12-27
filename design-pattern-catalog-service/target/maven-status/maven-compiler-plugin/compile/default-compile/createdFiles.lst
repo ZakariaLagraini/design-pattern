@@ -1,0 +1,4 @@
+com\example\designpatterncatalogservice\repository\DesignPatternRepository.class
+com\example\designpatterncatalogservice\entity\DesignPattern.class
+com\example\designpatterncatalogservice\controller\DesignPatternController.class
+com\example\designpatterncatalogservice\DesignPatternCatalogServiceApplication.class

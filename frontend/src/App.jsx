@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/layout/Navbar';
 import Home from './pages/Home';
@@ -11,7 +11,7 @@ import ChatBot from './components/ChatBot';
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <Router>
         <div className="min-h-screen bg-gray-50">
           <Navbar />
           <Routes>
@@ -23,7 +23,7 @@ function App() {
           </Routes>
           <ChatBot />
         </div>
-      </BrowserRouter>
+      </Router>
     </AuthProvider>
   );
 }
